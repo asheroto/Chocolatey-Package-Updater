@@ -109,8 +109,19 @@ function SendAlertRaw {
 
     # Note - you might consider using ntfy.sh, it's an awesome tool
     # In this script, however, I'm using a custom service that I built
-    # This function gets the URL from a secure string file and sends the alert by making a POST request to the URL
+    # This function gets the URL from a secure string file (encrypted) and sends the alert by making a POST request to the URL
+    # If you just want to make a GET/POST request, comment out the lines below until you get to the if($alertUrl)/Invoke-WebRequest section and replace with your own code
 
+    # To save the URL as a secure string, run the following command in the comment block:
+    <#
+        # Connect
+        $CredsFile = "C:\Path\To\SecureString\Folder\SecretURL.txt"
+
+        # Store credential in a file as secure string
+        Read-Host "Secret URL" -AsSecureString | ConvertFrom-SecureString | Out-File $CredsFile
+    #>
+
+    # Environment variable contains path to $CredsFile (create or change below as needed)
     # Get the secret URL from the secure string file using the path in the environment variable
     $CredsFile = [System.Environment]::GetEnvironmentVariable('EMAIL_NOTIFICATION_CREDS_PATH', [System.EnvironmentVariableTarget]::User)
 
