@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.1
+.VERSION 0.0.2
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -14,6 +14,7 @@
 
 .RELEASENOTES
 [Version 0.0.1] - Initial release, deployment and additional features still under development.
+[Version 0.0.2] - Fixed wrong checksum variable being used
 
 #>
 
@@ -37,7 +38,7 @@ To update a Chocolatey package, run the following command:
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\legal\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.1
+- Version: 0.0.2
 - Created by: asheroto
 
 .LINK
@@ -46,7 +47,7 @@ Project Site: https://github.com/asheroto/Chocolatey-Package-Updater
 #>
 
 # Script information (future use)
-# $CurrentVersion = '0.0.1'
+# $CurrentVersion = '0.0.2'
 # $RepoOwner = 'asheroto'
 # $RepoName = 'Chocolatey-Package-Updater'
 # $PowerShellGalleryName = 'Chocolatey-Package-Updater'
@@ -337,11 +338,11 @@ function UpdateChocolateyPackage {
         $NuspecVersion = $VersionMatches.Groups[1].Value
 
         # Define the match pattern for checksum in ChocolateyInstall.ps1
-        $checksumPattern = '(?<=\$checksum\s*=\s*)["''].*?["'']|(?<=checksum\s*=\s*)["''].*?["'']'
+        $chocolateyInstallPattern = '(?<=(checksum\s*=\s*)["''])(.*?)(?=["''])'
 
         # Extract the current checksum from ChocolateyInstall.ps1
         $chocolateyInstallContent = Get-Content $InstallScriptPath -Raw
-        $CurrentChecksumMatches = [regex]::Match($chocolateyInstallContent, $checksumPattern)
+        $CurrentChecksumMatches = [regex]::Match($chocolateyInstallContent, $chocolateyInstallPattern)
         $CurrentChecksum = $CurrentChecksumMatches.Value.Trim("'")
 
         # Calculate the new checksum
@@ -371,7 +372,6 @@ function UpdateChocolateyPackage {
 
                 # ChocolateyInstall.ps1
                 # Detect the format (variable or hash table) and update the checksum accordingly
-                $chocolateyInstallPattern = '(?<=(checksum\s*=\s*)["''])(.*?)(?=["''])'
                 $chocolateyInstallResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallPattern -Replacement $NewChecksum
 
                 if (!$chocolateyInstallResult) {
@@ -410,7 +410,11 @@ function UpdateChocolateyPackage {
                 # If the destination path is specified, move the downloaded file to the specified destination
                 if ($FileDestinationPath) {
                     Write-Debug "Moving file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`""
-                    Move-Item $FileDownloadTempPath -Destination $FileDestinationPath -Force
+                    try {
+                        Move-Item $FileDownloadTempPath -Destination $FileDestinationPath -Force
+                    } catch {
+                        throw "Failed to move file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`" with error: $_"
+                    }
                 }
             } else {
                 # Package is up to date
@@ -435,4 +439,4 @@ function UpdateChocolateyPackage {
     } finally {
         CleanupFileDownload
     }
-}
+} 
