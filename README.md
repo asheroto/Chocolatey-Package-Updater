@@ -191,3 +191,10 @@ Included in this repository is a real-world example using [FxSound](example-pack
     -   I'm currently focused on multiple projects, but I'll definitely consider dedicating more time to this one based on community interest.
     -   If you find it useful or promising, your stars and [donations](https://github.com/sponsors/asheroto?frequency=one-time&sponsor=asheroto) will be greatly appreciated and will serve as an indicator for me to continue its development.
     -   Thank you for your support!
+
+## To-Do List
+- Add `CheckForUpdate` function
+- Add `UpdateSelf` function
+- Add `ntfy.sh` support
+- Add to PowerShell Gallery
+- Add script to Chocolatey as a package
