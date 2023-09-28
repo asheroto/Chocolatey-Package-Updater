@@ -322,7 +322,7 @@ function UpdateChocolateyPackage {
         $VersionMatches = [regex]::Match($NuspecContent, '<version>(.*?)<\/version>')
         $NuspecVersion = $VersionMatches.Groups[1].Value
 
-        # Define the match pattern for checksum
+        # Define the match pattern for checksum in ChocolateyInstall.ps1
         $checksumPattern = '(?<=\$checksum\s*=\s*)["''].*?["'']|(?<=checksum\s*=\s*)["''].*?["'']'
 
         # Extract the current checksum from ChocolateyInstall.ps1
@@ -344,16 +344,15 @@ function UpdateChocolateyPackage {
 
             # Compare versions and checksums
             if ([version]$ProductVersion -gt [version]$NuspecVersion -or $NewChecksum -ne $CurrentChecksum) {
-                Write-Debug "Version or checksum is different. Updating package."
-                Write-Output "Updating package..."
+                Write-Output "Version or checksum is different. Updating package..."
 
                 # nuspec file
                 # Update the version
                 $nuspecResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(<version>).*?(<\/version>)' -Replacement "`${1}$ProductVersion`$2"
                 if (!$nuspecResult) {
-                    Write-Output "Failed to update version in nuspec file: $NuspecPath"
+                    throw "Failed to update version in nuspec file: $NuspecPath"
                 } else {
-                    Write-Debug "Updated version in nuspec file: $NuspecPath"
+                    Write-Output "Updated version in nuspec file: $NuspecPath"
                 }
 
                 # ChocolateyInstall.ps1
@@ -362,23 +361,29 @@ function UpdateChocolateyPackage {
                 $chocolateyInstallResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallPattern -Replacement $NewChecksum
 
                 if (!$chocolateyInstallResult) {
-                    Write-Output "Failed to update checksum in install script: $InstallScriptPath"
+                    throw "Failed to update checksum in ChocolateyInstall.ps1 script: $InstallScriptPath"
                 } else {
-                    Write-Debug "Updated checksum in install script: $InstallScriptPath"
+                    Write-Output "Updated checksum in ChocolateyInstall.ps1 script: $InstallScriptPath"
                 }
 
                 # VERIFICATION.txt
-                # Update the checksum if $VerificationPath is set and the file exists
-                if ($VerificationPath -and (Test-Path $VerificationPath)) {
-                    Write-Debug "Updating checksum in verification file: $VerificationPath"
-                    $verificationResult = UpdateFileContent -FilePath $VerificationPath -Pattern '(checksum:\s*)\w+' -Replacement "`${1}$NewChecksum"
-                    if (!$verificationResult) {
-                        Write-Output "Failed to update checksum in verification file: $VerificationPath"
+                # Check whether $VerificationPath is set or not, and if set, check if it exists or not
+                if ($VerificationPath) {
+                    if (Test-Path $VerificationPath) {
+                        Write-Debug "Verification path is set and file exists. Updating checksum in verification file: $VerificationPath."
+
+                        $verificationResult = UpdateFileContent -FilePath $VerificationPath -Pattern '(checksum:\s*)\w+' -Replacement "`${1}$NewChecksum"
+
+                        if (!$verificationResult) {
+                            throw "Failed to update checksum in verification file: $VerificationPath"
+                        } else {
+                            Write-Output "Updated checksum in verification file: $VerificationPath"
+                        }
                     } else {
-                        Write-Debug "Updated checksum in verification file: $VerificationPath"
+                        throw "Verification path is set but the file does not exist: $VerificationPath."
                     }
                 } else {
-                    Write-Debug "Verification file specified or not found: $VerificationPath"
+                    Write-Debug "Verification path is not set."
                 }
 
                 # Write the new version to the console
