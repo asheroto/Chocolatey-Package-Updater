@@ -18,7 +18,7 @@ body:
     label: Checklist
     description: Before continuing, make sure you have done the following.
     options:
-    - label: I have performed the steps in the [Troubleshooting](https://github.com/asheroto/Chocolatey-Package-Updater#troubleshooting) section and confirm that the issue only occurs with this script.
+    - label: I have performed the steps in the [FAQ](https://github.com/asheroto/Chocolatey-Package-Updater#faq) section and confirm that the issue only occurs with this script.
       required: true
     - label: |
         I have restarted my computer to confirm this is not a transitory problem.
