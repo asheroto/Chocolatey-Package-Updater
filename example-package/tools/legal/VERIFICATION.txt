@@ -11,4 +11,4 @@ To verify the files using the author's download URL:
 ---
 
 checksum type: sha256
-checksum: OLD_CHECKSUM_HERE
+checksum: OLD_CHECKSUM_WILL_BE_REPLACED_BY_CHOCOLATEY_PACKAGE_UPDATER
