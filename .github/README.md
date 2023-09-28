@@ -71,6 +71,8 @@ The `UpdateChocolateyPackage` function operates in the following steps:
 
 ## Usage
 
+Don't worry, it's not hard! There's a [full example](example-package) available on this repo in case you get stuck.
+
 ### Step 1 - Dot-Source the Functions
 
 Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. Then call the `UpdateChocolateyPackage` function with the required parameters.
@@ -97,6 +99,9 @@ You can call the `UpdateChocolateyPackage` function with either **named paramete
 
 ```powershell
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\legal\VERIFICATION.txt" -Alert $true
+
+# Return to the original directory (if you used Push-Location at the beginning)
+Pop-Location
 ```
 
 The command above does the same thing as the command below, it's just a different way to issue the update command.
@@ -119,6 +124,9 @@ $packageInfo = @{
 
 # Call the UpdateChocolateyPackage function and pass the hash table
 UpdateChocolateyPackage @packageInfo
+
+# Return to the original directory (if you used Push-Location at the beginning)
+Pop-Location
 ```
 
 ---
@@ -172,3 +180,11 @@ Included in this repository is a real-world example using [FxSound](example-pack
   - If you aren't sure what to change, ChatGPT is a good place to start.
   - [ntfy](https://github.com/binwiederhier/ntfy) is cool because once you get it setup, it integrates with many services. So in theory you could use ntfy to send a message to Discord, Telegram, PagerDuty, Twilio, and more.
   - I am working on adding native support for other services.
+- Do I have to use Push-Location and Pop-Location?
+  - If you don't want to use these then you will need either:
+    - Use absolute paths with each file for all parameters.
+    - or use the "Working Directory" argument when launching the script so that PowerShell knows where to look for relative paths.
+- How much development is going into this?
+  - I'm currently focused on multiple projects, but I'll definitely consider dedicating more time to this one based on community interest.
+  - If you find it useful or promising, your stars and shares will be greatly appreciated and will serve as an indicator for me to continue its development.
+  - Thank you for your support!
