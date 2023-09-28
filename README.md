@@ -133,6 +133,8 @@ Pop-Location
 
 ### Step 3 - Schedule the PowerShell Script
 
+You can use Windows Task Scheduler to schedule the `update.ps1` script to run automatically.
+
 In Task Scheduler, create a new Task (not basic) and set the `Action` to the following:
 
 ```powershell
