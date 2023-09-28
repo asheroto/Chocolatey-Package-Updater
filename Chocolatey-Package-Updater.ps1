@@ -281,7 +281,7 @@ function UpdateChocolateyPackage {
                     Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
                 }
             } else {
-                Write-Debug "File not found at the specified path: $FileDownloadTempPath"
+                Write-Debug "File download temp path does not exist and will not conflict with downloads: $FileDownloadTempPath"
             }
         }
     }

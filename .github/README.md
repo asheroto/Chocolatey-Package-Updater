@@ -1,6 +1,6 @@
 # Chocolatey-Package-Updater
 
-![Chocolatey Package Updater screenshot](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/658fd110-19ac-4d9a-9807-768b11a780dc)
+![Chocolatey Package Updater screenshot](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/203952c3-d1bb-44ca-8514-3d6015ce8f4a)
 
 [![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/asheroto/Chocolatey-Package-Updater)](https://github.com/asheroto/Chocolatey-Package-Updater/releases)
 [![GitHub Downloads - All Releases](https://img.shields.io/github/downloads/asheroto/Chocolatey-Package-Updater/total)](https://github.com/asheroto/Chocolatey-Package-Updater/releases)
@@ -173,18 +173,19 @@ Included in this repository is a real-world example using [FxSound](example-pack
 | `-Alert`                  | No       | true    | If the package is updated, send a message to the maintainer for review                  |
 
 ## FAQ
-- Do I need to use the `VERIFICATION.txt` file?
-  - No, it's optional unless you are distributing an EXE with the package (if EULA allows it). If you don't use it, just leave the parameter blank or comment it out.
-- Can I use [ntfy.sh](https://github.com/binwiederhier/ntfy), Discord, Telegram, PagerDuty, Twilio, or some other service to alert me?
-  - Yes!.... but since this script is new I haven't built in native support for other services yet, so you'll have to update the `SendAlertRaw` function.
-  - If you aren't sure what to change, ChatGPT is a good place to start.
-  - [ntfy](https://github.com/binwiederhier/ntfy) is cool because once you get it setup, it integrates with many services. So in theory you could use ntfy to send a message to Discord, Telegram, PagerDuty, Twilio, and more.
-  - I am working on adding native support for other services.
-- Do I have to use Push-Location and Pop-Location?
-  - If you don't want to use these then you will need either:
-    - Use absolute paths with each file for all parameters.
-    - or use the "Working Directory" argument when launching the script so that PowerShell knows where to look for relative paths.
-- How much development is going into this?
-  - I'm currently focused on multiple projects, but I'll definitely consider dedicating more time to this one based on community interest.
-  - If you find it useful or promising, your stars and shares will be greatly appreciated and will serve as an indicator for me to continue its development.
-  - Thank you for your support!
+
+-   Do I need to use the `VERIFICATION.txt` file?
+    -   No, it's optional unless you are distributing an EXE with the package (if EULA allows it). If you don't use it, just leave the parameter blank or comment it out.
+-   Can I use [ntfy.sh](https://github.com/binwiederhier/ntfy), Discord, Telegram, PagerDuty, Twilio, or some other service to alert me?
+    -   Yes!.... but since this script is new I haven't built in native support for other services yet, so you'll have to update the `SendAlertRaw` function.
+    -   If you aren't sure what to change, ChatGPT is a good place to start.
+    -   [ntfy](https://github.com/binwiederhier/ntfy) is cool because once you get it setup, it integrates with many services. So in theory you could use ntfy to send a message to Discord, Telegram, PagerDuty, Twilio, and more.
+    -   I am working on adding native support for other services.
+-   Do I have to use Push-Location and Pop-Location?
+    -   If you don't want to use these then you will need either:
+        -   Use absolute paths with each file for all parameters.
+        -   or use the "Working Directory" argument when launching the script so that PowerShell knows where to look for relative paths.
+-   How much development is going into this?
+    -   I'm currently focused on multiple projects, but I'll definitely consider dedicating more time to this one based on community interest.
+    -   If you find it useful or promising, your stars and shares will be greatly appreciated and will serve as an indicator for me to continue its development.
+    -   Thank you for your support!
