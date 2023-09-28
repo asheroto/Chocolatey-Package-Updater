@@ -148,6 +148,9 @@ function SendAlert {
         return
     }
 
+    # Output sending alert
+    Write-Output "Sending alert..."
+
     # Create the HTML body for the notification
     $date = Get-Date -Format "yyyy-MM-dd hh:mm:ss tt"
     $body = "<html><body>"
@@ -157,8 +160,8 @@ function SendAlert {
     $body += "</font>"
     $body += "</body></html>"
 
-    Write-Debug "Sending alert with subject: $Subject"
-    Write-Debug "Sending alert with body:`n$body"
+    Write-Verbose "Sending alert with subject: $Subject"
+    Write-Verbose "Sending alert with body:`n$body"
 
     # Send the alert
     SendAlertRaw -Subject $Subject -Message $body
