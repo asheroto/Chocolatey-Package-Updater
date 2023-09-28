@@ -20,7 +20,7 @@
 <#
 
 .SYNOPSIS
-This PowerShell script automates the updating of Chocolatey packages, managing version changes, checksum updates, and alert notifications.
+Streamline the management of Chocolatey packages by automating version updates, checksum validations, and alert notifications.
 
 .DESCRIPTION
 The script simplifies the process of updating Chocolatey packages by providing automated functionality to:

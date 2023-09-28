@@ -160,7 +160,7 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 
 Included in this repository is a real-world example using [FxSound](example-package).
 
-## Parameters
+## Function Parameters for `UpdateChocolateyPackage`
 
 | Parameter                 | Required | Default | Description                                                                             |
 | ------------------------- | -------- | ------- | --------------------------------------------------------------------------------------- |
@@ -173,6 +173,21 @@ Included in this repository is a real-world example using [FxSound](example-pack
 | `-InstallScriptPath`      | Yes      | -       | The path to the `ChocolateyInstall.ps1` script                                          |
 | `-VerificationPath`       | No       | -       | The path to the `VERIFICATION.txt` file                                                 |
 | `-Alert`                  | No       | true    | If the package is updated, send a message to the maintainer for review                  |
+
+## Script Parameters
+
+If you add these two lines to the _very top_ of your `update.ps1` script, you can then use the `-Debug` or `-Verbose` parameters when calling the script and it will give you **much more** information about what it's doing.
+
+```powershell
+[CmdletBinding()] # Enables -Debug parameter for troubleshooting
+param ()
+```
+
+<details><summary>Screenshot of `-Debug` output</summary>
+<p>
+<img src="https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/bb4e8622-1aff-4a4d-9d0c-8e10f27cd579" alt="-Debug output">
+</p>
+</details>
 
 ## FAQ
 
@@ -189,12 +204,14 @@ Included in this repository is a real-world example using [FxSound](example-pack
         -   or use the "Working Directory" argument when launching the script so that PowerShell knows where to look for relative paths.
 -   How much development is going into this?
     -   I'm currently focused on multiple projects, but I'll definitely consider dedicating more time to this one based on community interest.
-    -   If you find it useful or promising, your stars and [donations](https://github.com/sponsors/asheroto?frequency=one-time&sponsor=asheroto) will be greatly appreciated and will serve as an indicator for me to continue its development.
+    -   If you find it useful or promising, please click the **Star** button at the top right which serves as an indicator for me to continue its development.
+    -   Subscribe to release notifications by going to Watch → Custom → Releases → Apply
     -   Thank you for your support!
 
 ## To-Do List
-- Add `CheckForUpdate` function
-- Add `UpdateSelf` function
-- Add `ntfy.sh` support
-- Add to PowerShell Gallery
-- Add script to Chocolatey as a package
+
+-   Add `CheckForUpdate` function
+-   Add `UpdateSelf` function
+-   Add `ntfy.sh` support
+-   Add to PowerShell Gallery
+-   Add script to Chocolatey as a package
