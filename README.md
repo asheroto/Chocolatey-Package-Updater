@@ -21,14 +21,17 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 
 The `UpdateChocolateyPackage` function provides the following features:
 
+-   No functions or regex expressions to write: everything happens automatically!
 -   Updates the version in the nuspec file.
--   Updates the checksum in the `ChocolateyInstall.ps1` script.
+-   Updates the url/version/checksum in the `ChocolateyInstall.ps1` script.
 -   Updates the checksum in the `VERIFICATION.txt` file (if it exists).
 -   Sends an alert to a designated URL.
 -   Supports EXE files distributed in the package.
--   Supports variable and hash table formats for checksum in the install script.
--   Supports single and double quotes for checksum in the install script.
+-   Supports variable and hash table formats for checksum in the `ChocolateyInstall.ps1` script.
+-   Supports single and double quotes for checksum in the `ChocolateyInstall.ps1` script.
 -   Automatic support for [aria2](https://github.com/aria2/aria2) download manager as well as `Invoke-WebRequest`.
+-   Supports scraping the version number from the download URL.
+-   Supports version number replacement in the download URL.
 
 ## How It Works
 
@@ -36,11 +39,12 @@ The `UpdateChocolateyPackage` function operates in the following steps:
 
 1. Downloads the package EXE file and retrieves its product version.
 2. Compares the downloaded file's version to the version specified in the nuspec file.
-3. Compares the downloaded file's checksum to the checksum in the install script.
-4. If the package requires an update, it performs the following actions:
+3. Compares the downloaded file's checksum to the checksum in the `ChocolateyInstall.ps1` script.
+4. Compares the downloaded file's checksum to the checksum in the `VERIFICATION.txt` file (if it exists).
+5. If the package requires an update, it performs the following actions:
     - Updates the version in the nuspec file.
-    - Updates the checksum in the install script.
-    - Updates the checksum in the verification file (if it exists).
+    - Updates the url/version/checksum in the `ChocolateyInstall.ps1` script.
+    - Updates the checksum in the `VERIFICATION.txt` file (if it exists).
     - Sends an alert to a designated URL.
 
 ## Requirements
@@ -80,15 +84,12 @@ Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. 
 You may have to change the path to the `Chocolatey-Package-Updater.ps1` script depending on where you place it, but if you place it in the root folder as described in the and your `update.ps1` file is in a sub-folder (as described in the [Recommended Folder Structure](#recommended-folder-structure)), you can use the following code verbatim.
 
 ```powershell
-# Remember current directory
-Push-Location
+# Set vars to the script and the parent path
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ParentPath = Split-Path -Parent $ScriptPath
 
-# Change to the directory of this script
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-Set-Location $scriptPath
-
-# Imports the Chocolatey-Package-Updater functions
-. ..\Chocolatey-Package-Updater.ps1
+# Import the UpdateChocolateyPackage function
+. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
 ```
 
 You can call the `UpdateChocolateyPackage` function with either **named parameters** or **splatting** (similar to what many `ChocolateyInstall.ps1` packages do).
@@ -98,10 +99,7 @@ You can call the `UpdateChocolateyPackage` function with either **named paramete
 ### Step 2 (option #1) - Update Using Named Parameters
 
 ```powershell
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\legal\VERIFICATION.txt" -Alert $true
-
-# Return to the original directory (if you used Push-Location at the beginning)
-Pop-Location
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true
 ```
 
 The command above does the same thing as the command below, it's just a different way to issue the update command.
@@ -111,22 +109,14 @@ The command above does the same thing as the command below, it's just a differen
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
-    PackageName            = "fxsound"
-    FileUrl                = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
-    FileDownloadTempPath   = '.\fxsound_setup_temp.exe'                     # Path to save the file to
-    FileDownloadTempDelete = $true                                          # Delete the temporary file after downloading and comparing to exiting version & checksum
-    FileDestinationPath    = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package)
-    NuspecPath             = '.\fxsound.nuspec'                             # Path to the nuspec file
-    InstallScriptPath      = '.\tools\ChocolateyInstall.ps1'                # Path to the ChocolateyInstall.ps1 script
-    VerificationPath       = '.\tools\legal\VERIFICATION.txt'               # Path to the VERIFICATION.txt file
-    Alert                  = $true                                          # If the package is updated, send a message to the maintainer for review
+    PackageName         = "fxsound"
+    FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
+    FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
+    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
 UpdateChocolateyPackage @packageInfo
-
-# Return to the original directory (if you used Push-Location at the beginning)
-Pop-Location
 ```
 
 ---
