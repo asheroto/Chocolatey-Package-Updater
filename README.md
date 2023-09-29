@@ -15,7 +15,7 @@
 
 ## Inspiration
 
-Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use.
+Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
 
 ## Features
 
