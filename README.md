@@ -203,3 +203,4 @@ param ()
 -   Add to PowerShell Gallery
 -   Add script to Chocolatey as a package
 -   Add support for Checksum32/Checksum64
+-   Add more examples
