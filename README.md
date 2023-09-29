@@ -75,7 +75,7 @@ The `UpdateChocolateyPackage` function operates in the following steps:
 
 ## Usage
 
-Don't worry, it's not hard! There's a [full example](example-package) available on this repo in case you get stuck.
+Don't worry, it's not hard! There's an example [update.ps1](example-package/update.ps1) file and a [full package example](example-package) available on this repo in case you get stuck.
 
 ### Step 1 - Dot-Source the Functions
 
