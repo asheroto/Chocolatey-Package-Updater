@@ -152,17 +152,19 @@ Included in this repository is a real-world example using [FxSound](example-pack
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
-| Parameter                 | Required | Default | Description                                                                             |
-| ------------------------- | -------- | ------- | --------------------------------------------------------------------------------------- |
-| `-PackageName`            | Yes      | -       | The name of the package                                                                 |
-| `-FileUrl`                | Yes      | -       | The URL to download the file from                                                       |
-| `-FileDownloadTempPath`   | Yes      | -       | The path to save the file to                                                            |
-| `-FileDownloadTempDelete` | No       | true    | Delete the temporary file after downloading and comparing to exiting version & checksum |
-| `-FileDestinationPath`    | No       | -       | The path to move/rename the temporary file to (if EXE is distributed in package)        |
-| `-NuspecPath`             | Yes      | -       | The path to the nuspec file                                                             |
-| `-InstallScriptPath`      | Yes      | -       | The path to the `ChocolateyInstall.ps1` script                                          |
-| `-VerificationPath`       | No       | -       | The path to the `VERIFICATION.txt` file                                                 |
-| `-Alert`                  | No       | true    | If the package is updated, send a message to the maintainer for review                  |
+| Parameter                 | Type    | Required | Description                                                                                                          |
+| ------------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `-PackageName`            | string  | Yes      | The name of the package                                                                                              |
+| `-FileUrl`                | string  | Yes      | The URL to download the file from                                                                                    |
+| `-FileDownloadTempPath`   | string  | No       | The path to save the file to                                                                                         |
+| `-FileDownloadTempDelete` | boolean | No       | Delete the temporary file after downloading and comparing to existing version & checksum                             |
+| `-FileDestinationPath`    | string  | No       | The path to move/rename the temporary file to (if EXE is distributed in package)                                     |
+| `-NuspecPath`             | string  | No       | The path to the nuspec file                                                                                          |
+| `-InstallScriptPath`      | string  | No       | The path to the `ChocolateyInstall.ps1` script                                                                       |
+| `-VerificationPath`       | string  | No       | The path to the `VERIFICATION.txt` file                                                                              |
+| `-ScrapeUrl`              | string  | No       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from. |
+| `-ScrapePattern`          | string  | No       | The regex pattern to use when scraping the version number from the scrape URL.                                       |
+| `-Alert`                  | boolean | No       | If the package is updated, send a message to the maintainer for review                                               |
 
 ## Script Parameters
 
@@ -200,8 +202,8 @@ param ()
 
 ## To-Do List
 
--   Add `CheckForUpdate` function
 -   Add `UpdateSelf` function
 -   Add `ntfy.sh` support
 -   Add to PowerShell Gallery
 -   Add script to Chocolatey as a package
+-   Add support for Checksum32/Checksum64
