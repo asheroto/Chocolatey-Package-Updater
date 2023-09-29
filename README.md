@@ -175,7 +175,7 @@ If you add these two lines to the _very top_ of your `update.ps1` script, you ca
 param ()
 ```
 
-<details><summary>Screenshot of `-Debug` output</summary>
+<details><summary>Screenshot of -Debug output</summary>
 <p>
 <img src="https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/bb4e8622-1aff-4a4d-9d0c-8e10f27cd579" alt="-Debug output">
 </p>
