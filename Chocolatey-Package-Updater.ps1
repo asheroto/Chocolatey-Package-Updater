@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.2
+.VERSION 0.0.3
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -15,6 +15,7 @@
 .RELEASENOTES
 [Version 0.0.1] - Initial release, deployment and additional features still under development.
 [Version 0.0.2] - Fixed wrong checksum variable being used
+[Version 0.0.3] - Added support for stripping out the version number from the Product Version, as well as checking the File Version if the Product Version is not available. Improved pattern matching. Remove extra debug statements. Added logic to check if VERIFICATION.txt checksum changed. Add -Version and -CheckForUpdate parameters and logic. Added supported for ScrapeUrl, ScrapePattern, and VERSION replacement in URL.
 
 #>
 
@@ -38,22 +39,119 @@ To update a Chocolatey package, run the following command:
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\legal\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.2
+- Version: 0.0.3
 - Created by: asheroto
 
 .LINK
 Project Site: https://github.com/asheroto/Chocolatey-Package-Updater
 
 #>
+[CmdletBinding()]
+param (
+    [switch]$Version,
+    [switch]$CheckForUpdate
+)
 
-# Script information (future use)
-# $CurrentVersion = '0.0.2'
-# $RepoOwner = 'asheroto'
-# $RepoName = 'Chocolatey-Package-Updater'
-# $PowerShellGalleryName = 'Chocolatey-Package-Updater'
+$CurrentVersion = '0.0.3'
+$RepoOwner = 'asheroto'
+$RepoName = 'Chocolatey-Package-Updater'
+$PowerShellGalleryName = 'Chocolatey-Package-Updater'
 
 # Suppress progress bar (makes downloading super fast)
 $ProgressPreference = 'SilentlyContinue'
+
+# Display version if -Version is specified
+if ($Version.IsPresent) {
+    $CurrentVersion
+    exit 0
+}
+
+function Get-GitHubRelease {
+    <#
+        .SYNOPSIS
+        Fetches the latest release information of a GitHub repository.
+
+        .DESCRIPTION
+        This function uses the GitHub API to get information about the latest release of a specified repository, including its version and the date it was published.
+
+        .PARAMETER Owner
+        The GitHub username of the repository owner.
+
+        .PARAMETER Repo
+        The name of the repository.
+
+        .EXAMPLE
+        Get-GitHubRelease -Owner "asheroto" -Repo "winget-install"
+        This command retrieves the latest release version and published datetime of the winget-install repository owned by asheroto.
+    #>
+    [CmdletBinding()]
+    param (
+        [string]$Owner,
+        [string]$Repo
+    )
+    try {
+        $url = "https://api.github.com/repos/$Owner/$Repo/releases/latest"
+        $response = Invoke-RestMethod -Uri $url -ErrorAction Stop
+
+        $latestVersion = $response.tag_name
+        $publishedAt = $response.published_at
+
+        # Convert UTC time string to local time
+        $UtcDateTime = [DateTime]::Parse($publishedAt, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind)
+        $PublishedLocalDateTime = $UtcDateTime.ToLocalTime()
+
+        [PSCustomObject]@{
+            LatestVersion     = $latestVersion
+            PublishedDateTime = $PublishedLocalDateTime
+        }
+    } catch {
+        Write-Error "Unable to check for updates.`nError: $_"
+        exit 1
+    }
+}
+
+function CheckForUpdate {
+    param (
+        [string]$RepoOwner,
+        [string]$RepoName,
+        [version]$CurrentVersion,
+        [string]$PowerShellGalleryName
+    )
+
+    $Data = Get-GitHubRelease -Owner $RepoOwner -Repo $RepoName
+
+    if ($Data.LatestVersion -gt $CurrentVersion) {
+        Write-Output "`nA new version of $RepoName is available.`n"
+        Write-Output "Current version: $CurrentVersion."
+        Write-Output "Latest version: $($Data.LatestVersion)."
+        Write-Output "Published at: $($Data.PublishedDateTime).`n"
+        Write-Output "You can download the latest version from https://github.com/$RepoOwner/$RepoName/releases`n"
+        if ($PowerShellGalleryName) {
+            Write-Output "Or you can run the following command to update:"
+            Write-Output "Install-Script $PowerShellGalleryName -Force`n"
+        }
+    } else {
+        Write-Output "`n$RepoName is up to date.`n"
+        Write-Output "Current version: $CurrentVersion."
+        Write-Output "Latest version: $($Data.LatestVersion)."
+        Write-Output "Published at: $($Data.PublishedDateTime)."
+        Write-Output "`nRepository: https://github.com/$RepoOwner/$RepoName/releases`n"
+    }
+    exit 0
+}
+
+# ============================================================================ #
+# Initial checks
+# ============================================================================ #
+
+# Check for updates if -CheckForUpdate is specified
+if ($CheckForUpdate) {
+    CheckForUpdate -RepoOwner $RepoOwner -RepoName $RepoName -CurrentVersion $CurrentVersion -PowerShellGalleryName $PowerShellGalleryName
+}
+
+# Heading
+Write-Output "$RepoName $CurrentVersion"
+Write-Output "To check for updates, run $RepoName -CheckForUpdate"
 
 function UpdateFileContent {
     [OutputType([System.String])]
@@ -61,42 +159,38 @@ function UpdateFileContent {
     param (
         [Parameter(Mandatory = $true)]
         [string]$FilePath,
-
         [Parameter(Mandatory = $true)]
         [string]$Pattern,
-
         [Parameter(Mandatory = $true)]
         [string]$Replacement
     )
-
-    # Get the absolute path of the file
     $absolutePath = (Resolve-Path $FilePath).ProviderPath
-
-    Write-Debug "Updating file content: $absolutePath"
+    Write-Debug "Working with file: $absolutePath"
 
     if (Test-Path $absolutePath) {
         $fileContent = Get-Content $absolutePath -Raw
 
-        # Attempt to replace the specified pattern with the replacement string
-        $updatedContent = $fileContent -replace $Pattern, $Replacement
+        if ($fileContent -match $Pattern) {
+            Write-Debug "Pattern found in file"
+            $updatedContent = $fileContent -replace $Pattern, $Replacement
+            [System.IO.File]::WriteAllText($absolutePath, $updatedContent)
+            $verifyContent = Get-Content $absolutePath -Raw
 
-        # Write the updated content back to the file
-        [System.IO.File]::WriteAllText($absolutePath, $updatedContent)
-
-        # Verify that the replacement actually occurred by checking the file content
-        $verifyContent = Get-Content $absolutePath -Raw
-        if ($verifyContent -match [regex]::Escape($Replacement)) {
-            Write-Debug "Replacement verified in file: $absolutePath"
-            return "true"
+            if ($verifyContent -match $Replacement) {
+                Write-Debug "Replacement verified in file"
+                return "true"
+            } else {
+                return "Replacement not found in file"
+            }
         } else {
-            $errorMessage = "Replacement not found in file: $absolutePath"
-            return $errorMessage
+            return "Pattern not found in file"
         }
     } else {
-        $errorMessage = "File not found: $absolutePath"
-        return $errorMessage
+        return "File not found"
     }
 }
+
+
 
 function SendAlertRaw {
     [CmdletBinding()]
@@ -260,50 +354,89 @@ function UpdateChocolateyPackage {
         [Parameter(Mandatory = $true)]
         [string]$FileUrl,
 
-        [Parameter(Mandatory = $true)]
-        [string]$FileDownloadTempPath,
+        [Parameter(Mandatory = $false)]
+        [string]$FileDownloadTempPath = ".\${PackageName}_setup_temp.exe",
 
         [Parameter(Mandatory = $false)]
         [string]$FileDestinationPath,
 
-        [Parameter(Mandatory = $true)]
-        [string]$NuspecPath,
-
-        [Parameter(Mandatory = $true)]
-        [string]$InstallScriptPath,
+        [Parameter(Mandatory = $false)]
+        [string]$NuspecPath = ".\$PackageName.nuspec",
 
         [Parameter(Mandatory = $false)]
-        [string]$VerificationPath,
+        [string]$InstallScriptPath = '.\tools\ChocolateyInstall.ps1',
+
+        [Parameter(Mandatory = $false)]
+        [string]$VerificationPath = '.\tools\VERIFICATION.txt',
 
         [Parameter(Mandatory = $false)]
         [boolean]$Alert = $true,
 
         [Parameter(Mandatory = $false)]
-        [boolean]$FileDownloadTempDelete = $true
+        [boolean]$FileDownloadTempDelete = $true,
+
+        [Parameter(Mandatory = $false)]
+        [string]$RepoUrl,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ScrapeUrl,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ScrapePattern
     )
 
-    function CleanupFileDownload {
-        # Check if FileDownloadTempDelete is not set
-        if (-not $FileDownloadTempDelete) {
-            Write-Debug "Temporary file deletion is disabled."
-        } else {
-            # Check if the file exists at the specified path
-            if (Test-Path $FileDownloadTempPath) {
-                try {
-                    Write-Debug "Removing temporary file: $FileDownloadTempPath"
-                    Remove-Item $FileDownloadTempPath -Force
-                } catch {
-                    Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
-                }
+    try {
+        # Remember the current directory
+        Push-Location
+
+        # Change to the directory of the script
+        Set-Location $ScriptPath
+
+        function CleanupFileDownload {
+            # Check if FileDownloadTempDelete is not set
+            if (-not $FileDownloadTempDelete) {
+                Write-Debug "Temporary file deletion is disabled."
             } else {
-                Write-Debug "File download temp path does not exist and will not conflict with downloads: $FileDownloadTempPath"
+                # Check if the file exists at the specified path
+                if (Test-Path $FileDownloadTempPath) {
+                    try {
+                        Write-Debug "Removing temporary file: $FileDownloadTempPath"
+                        Remove-Item $FileDownloadTempPath -Force
+                    } catch {
+                        Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
+                    }
+                }
             }
         }
-    }
 
-    try {
         # Show the current directory
         Write-Debug "Current directory: $pwd"
+
+        # If $ScrapeUrl and $ScrapePattern are set, scrape the URL for the version number
+        $ForceVersionNumber = ''
+        if ($ScrapeUrl -and $ScrapePattern) {
+            Write-Debug "Scraping URL: $ScrapeUrl"
+            Write-Debug "Scrape pattern: $ScrapePattern"
+
+            $page = Invoke-WebRequest -Uri $ScrapeUrl
+            if ($page.Content -match $ScrapePattern) {
+                # If $matches[0] looks like a version, make sure it's only numbers and periods and three parts
+                if ($matches[0] -match '^\d+(\.\d+){1,3}$') {
+                    $rez = $matches[0]
+                    Write-Output "Scraped version: $rez"
+                    $ForceVersionNumber = $rez
+                } else {
+                    throw "Scrape pattern matched but version is invalid: $rez"
+                }
+            } else {
+                throw "No match found."
+            }
+        }
+
+        # If $ForceVersionNumber and $FileUrl are set, replace {VERSION} in $FileUrl with $ForceVersionNumber
+        if ($ForceVersionNumber -and $FileUrl) {
+            $FileUrl = $FileUrl -replace '{VERSION}', $ForceVersionNumber
+        }
 
         # FileDownloadTempDelete warning
         if ($FileDownloadTempDelete -eq $false) {
@@ -315,21 +448,39 @@ function UpdateChocolateyPackage {
 
         # Download the file and get its ProductVersion
         Write-Output "Downloading file: $FileUrl"
-        Write-Output "Saving to: $FileDownloadTempPath"
+        Write-Debug "Saving to: $FileDownloadTempPath"
         if (Get-Command aria2c -ErrorAction SilentlyContinue) {
-            Write-Debug "aria2c is installed. Using aria2c to download the file."
+            Write-Debug "aria2c is detected and will be used to download the file."
             Invoke-Expression $("aria2c --out=`"$FileDownloadTempPath`" `"$FileUrl`" $($DebugPreference -eq 'SilentlyContinue' ? '--quiet' : '')")
         } else {
-            Write-Debug "aria2c is not installed. Using Invoke-WebRequest to download the file."
+            Write-Debug "Using Invoke-WebRequest to download the file."
             Invoke-WebRequest -Uri $FileUrl -OutFile $FileDownloadTempPath
         }
 
-        # Get the product version from the downloaded file
-        $ProductVersion = (Get-Command $FileDownloadTempPath).FileVersionInfo.ProductVersion
+        # Initialize variables
+        if ($ForceVersionNumber) {
+            # If $ForceVersionNumber is set, use it as the ProductVersion
+            $ProductVersion = $ForceVersionNumber
+        } else {
+            # If $ForceVersionNumber is not set, get the ProductVersion from the downloaded file
+            $ProductVersion = $null
+            $versionPattern = '(\d+\.\d+\.\d+)'
 
-        # Trim the version to 3 parts if it has 4
-        if ($ProductVersion -match '^\d+(\.\d+){3}$') {
-            $ProductVersion = ($ProductVersion -split '\.')[0..2] -join '.'
+            # Get the product version from the downloaded file
+            $fileInfo = (Get-Command $FileDownloadTempPath).FileVersionInfo
+
+            if ($fileInfo.ProductVersion) {
+                if ([regex]::IsMatch($fileInfo.ProductVersion, $versionPattern)) {
+                    $ProductVersion = [regex]::Match($fileInfo.ProductVersion, $versionPattern).Groups[1].Value
+                }
+            }
+
+            # Fallback to FileVersion if ProductVersion is not found or invalid
+            if ($null -eq $ProductVersion -and $fileInfo.FileVersion) {
+                if ([regex]::IsMatch($fileInfo.FileVersion, $versionPattern)) {
+                    $ProductVersion = [regex]::Match($fileInfo.FileVersion, $versionPattern).Groups[1].Value
+                }
+            }
         }
 
         # Get the current version from the nuspec
@@ -338,70 +489,97 @@ function UpdateChocolateyPackage {
         $NuspecVersion = $VersionMatches.Groups[1].Value
 
         # Define the match pattern for checksum in ChocolateyInstall.ps1
-        $chocolateyInstallPattern = '(?<=(checksum\s*=\s*)["''])(.*?)(?=["''])'
+        $ChocolateyInstallPattern = '(?i)(?<=(checksum\s*=\s*)["''])(.*?)(?=["''])'
 
         # Extract the current checksum from ChocolateyInstall.ps1
-        $chocolateyInstallContent = Get-Content $InstallScriptPath -Raw
-        $CurrentChecksumMatches = [regex]::Match($chocolateyInstallContent, $chocolateyInstallPattern)
-        $CurrentChecksum = $CurrentChecksumMatches.Value.Trim("'")
+        $ChocolateyInstallContent = Get-Content $InstallScriptPath -Raw
+        $ChocolateyInstallChecksumMatches = [regex]::Match($ChocolateyInstallContent, $ChocolateyInstallPattern)
+        $ChocolateyInstallChecksum = $ChocolateyInstallChecksumMatches.Value.Trim("'")
+
+        # Extract the current checksum from VERIFICATION.txt if the file exists
+        $VerificationPattern = '(?i)(?<=checksum:\s*)\w+'
+        if (Test-Path $VerificationPath) {
+            $VerificationContent = Get-Content $VerificationPath -Raw
+            $VerificationChecksumMatches = [regex]::Match($VerificationContent, $VerificationPattern)
+            $VerificationChecksum = $VerificationChecksumMatches.Value
+        }
 
         # Calculate the new checksum
         $NewChecksum = (Get-FileHash -Algorithm SHA256 $FileDownloadTempPath).Hash
 
         Write-Debug "Product version: $ProductVersion"
         Write-Debug "Nuspec version: $NuspecVersion"
+        Write-Debug "ChocolateyInstall checksum: $ChocolateyInstallChecksum"
+        Write-Debug "Verification checksum: $VerificationChecksum"
         Write-Debug "New checksum: $NewChecksum"
-        Write-Debug "Current checksum: $CurrentChecksum"
 
         # Validate version strings
         if ($ProductVersion -match '^\d+(\.\d+){1,3}$' -and $NuspecVersion -match '^\d+(\.\d+){1,3}$') {
             Write-Debug "Version strings are valid."
 
-            # Compare versions and checksums
-            if ([version]$ProductVersion -gt [version]$NuspecVersion -or $NewChecksum -ne $CurrentChecksum) {
+            # Compare versions, compare ChocolateyInstall.ps1 checksum, and compare VERIFICATION.txt checksum if $VerificationPath is set and the file exists
+            Write-Output "Comparing versions and checksums..."
+            if ($ProductVersion -ne $NuspecVersion `
+                    -or $ChocolateyInstallChecksum -ne $NewChecksum `
+                    -or ((Test-Path $VerificationPath) -and $VerificationChecksum -ne $NewChecksum)) {
                 Write-Output "Version or checksum is different. Updating package..."
 
                 # nuspec file
                 # Update the version
-                $nuspecResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(<version>).*?(<\/version>)' -Replacement "`${1}$ProductVersion`$2"
-                if (!$nuspecResult) {
-                    throw "Failed to update version in nuspec file: $NuspecPath"
+                $nuspecResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(?<=<version>).*?(?=<\/version>)' -Replacement $ProductVersion
+                if ($nuspecResult -ne "true") {
+                    throw "Failed to update version in nuspec file: $NuspecPath`nError: $nuspecResult"
                 } else {
-                    Write-Output "Updated version in nuspec file: $NuspecPath"
+                    Write-Output "Updated version in nuspec file"
                 }
 
                 # ChocolateyInstall.ps1
                 # Detect the format (variable or hash table) and update the checksum accordingly
-                $chocolateyInstallResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallPattern -Replacement $NewChecksum
-
-                if (!$chocolateyInstallResult) {
-                    throw "Failed to update checksum in ChocolateyInstall.ps1 script: $InstallScriptPath"
+                $chocolateyInstallResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $ChocolateyInstallPattern -Replacement $NewChecksum
+                if ($chocolateyInstallResult -ne "true") {
+                    Write-Debug "Failed to update checksum in ChocolateyInstall.ps1 script: $InstallScriptPath`nError: $chocolateyInstallResult"
                 } else {
-                    Write-Output "Updated checksum in ChocolateyInstall.ps1 script: $InstallScriptPath"
+                    Write-Output "Updated checksum in ChocolateyInstall.ps1 script"
+                }
+
+                # ChocolateyInstall.ps1
+                # Replace the Version variable if it exists
+                $chocolateyInstallVersionPattern = '(?i)(?<=(version\s*=\s*)["''])(.*?)(?=["''])'
+                $chocolateyInstallVersionResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallVersionPattern -Replacement $ProductVersion
+                if ($chocolateyInstallVersionResult -ne "true") {
+                    Write-Debug "Failed to update version in ChocolateyInstall.ps1 script: $InstallScriptPath`nError: $chocolateyInstallVersionResult"
+                } else {
+                    Write-Output "Updated version in ChocolateyInstall.ps1 script"
+                }
+
+                # ChocolateyInstall.ps1
+                # If $ForceVersionNumber and $FileUrl are set, replace Url with $FileUrl
+                if ($ForceVersionNumber -and $FileUrl) {
+                    $chocolateyInstallUrlPattern = '(?i)(?<=(url\s*=\s*)["''])(.*?)(?=["''])'
+                    $chocolateyInstallUrlResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrlPattern -Replacement $FileUrl
+                    if ($chocolateyInstallUrlResult -ne "true") {
+                        Write-Debug "Failed to update URL in ChocolateyInstall.ps1 script: $InstallScriptPath`nError: $chocolateyInstallUrlResult"
+                    } else {
+                        Write-Output "Updated URL in ChocolateyInstall.ps1 script"
+                    }
                 }
 
                 # VERIFICATION.txt
-                # Check whether $VerificationPath is set or not, and if set, check if it exists or not
-                if ($VerificationPath) {
-                    if (Test-Path $VerificationPath) {
-                        Write-Debug "Verification path is set and file exists. Updating checksum in verification file: $VerificationPath."
+                # Check whether $VerificationPath filend if set, check if it exists or not
+                if (Test-Path $VerificationPath) {
+                    Write-Debug "Verification path is set and file exists. Updating checksum in verification file: $VerificationPath."
 
-                        $verificationResult = UpdateFileContent -FilePath $VerificationPath -Pattern '(checksum:\s*)\w+' -Replacement "`${1}$NewChecksum"
+                    $verificationResult = UpdateFileContent -FilePath $VerificationPath -Pattern $VerificationPattern -Replacement $NewChecksum
 
-                        if (!$verificationResult) {
-                            throw "Failed to update checksum in verification file: $VerificationPath"
-                        } else {
-                            Write-Output "Updated checksum in verification file: $VerificationPath"
-                        }
+                    if ($verificationResult -ne "true") {
+                        throw "Failed to update checksum in verification file: $VerificationPath`nError: $verificationResult"
                     } else {
-                        throw "Verification path is set but the file does not exist: $VerificationPath."
+                        Write-Output "Updated checksum in verification file"
                     }
-                } else {
-                    Write-Debug "Verification path is not set."
                 }
 
                 # Write the new version to the console
-                Write-Output "Updated to version $ProductVersion."
+                Write-Output "Updated to version $ProductVersion"
 
                 # Send an alert if enabled
                 Write-Debug "Sending alert..."
@@ -438,5 +616,9 @@ function UpdateChocolateyPackage {
         Write-Warning "Line number : $($_.InvocationInfo.ScriptLineNumber)"
     } finally {
         CleanupFileDownload
+        Write-Output "Done."
+
+        # Return to the original directory
+        Pop-Location
     }
-} 
+}
