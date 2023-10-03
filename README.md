@@ -23,8 +23,8 @@ The `UpdateChocolateyPackage` function provides the following features:
 
 -   **No functions or regex expressions to write: everything happens _automatically_!**
 -   Updates the version in the nuspec file.
--   Updates the url/version/checksum in the `ChocolateyInstall.ps1` script.
--   Updates the checksum in the `VERIFICATION.txt` file (if it exists).
+-   Updates the url/checksum and url64/checksum64 (if specified) in the `ChocolateyInstall.ps1` script (if it exists).
+-   Updates the checksum and checksum64 in the `VERIFICATION.txt` file (if it exists).
 -   Sends an alert to a designated URL.
 -   Supports EXE files distributed in the package.
 -   Supports variable and hash table formats for checksum in the `ChocolateyInstall.ps1` script.
@@ -32,6 +32,8 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Automatic support for [aria2](https://github.com/aria2/aria2) download manager as well as `Invoke-WebRequest`.
 -   Supports scraping the version number from the download URL.
 -   Supports version number replacement in the download URL.
+
+**Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features..
 
 ## How It Works
 
@@ -263,3 +265,4 @@ param ()
 -   Add script to Chocolatey as a package
 -   Add more examples
 -   Improve output/debug
+-   Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
