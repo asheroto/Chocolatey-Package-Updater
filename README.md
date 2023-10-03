@@ -92,6 +92,8 @@ You may have to change the path to the `Chocolatey-Package-Updater.ps1` script d
 
 #### Example using file distributed in package
 
+This method corresponds to the [example-package-exe-distributed](example-package-exe-distributed) example package.
+
 ```powershell
 # Set vars to the script and the parent path
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -114,6 +116,8 @@ UpdateChocolateyPackage @packageInfo
 
 #### Example using url and url64:
 
+This method corresponds to the [example-package-url-url64](example-package-url-url64) example package.
+
 ```powershell
 # Set vars to the script and the parent path
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -135,6 +139,8 @@ UpdateChocolateyPackage @packageInfo
 ```
 
 #### Example using ScrapeUrl, ScrapePattern, FileUrl version replacement
+
+This method corresponds to the [example-package-scrape-version](example-package-scrape-version) example package.
 
 ```powershell
 # Set vars to the script and the parent path
