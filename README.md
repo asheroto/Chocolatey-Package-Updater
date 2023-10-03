@@ -58,16 +58,21 @@ The recommended folder structure matches this repository's structure. You can us
 
 -   ChocolateyPackages
     -   Chocolatey-Package-Updater.ps1
-    -   example-package
+    -   example-package-exe-distributed
         -   update.ps1
         -   fxsound.nuspec
         -   tools
             -   ChocolateyInstall.ps1
             -   fxsound_setup.exe
             -   VERIFICATION.txt
-    -   example-package2
+    -   example-package-url-url64
         -   update.ps1
         -   Miro.nuspec
+        -   tools
+            -   ChocolateyInstall.ps1
+    -   example-package-scrape-version
+        -   update.ps1
+        -   StartAllBack.nuspec
         -   tools
             -   ChocolateyInstall.ps1
 
@@ -75,7 +80,7 @@ The recommended folder structure matches this repository's structure. You can us
 
 ### Step 1 - Create an `update.ps1` file
 
-Match the [Recommended Folder Structure](#recommended-folder-structure) and create an `update.ps1` file in the folder of your Chocolatey package (`example-package` in the example).
+Match the [Recommended Folder Structure](#recommended-folder-structure) and create an `update.ps1` file in the folder of your Chocolatey package in the example).
 
 Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. Then call the `UpdateChocolateyPackage` function with the required parameters.
 
@@ -168,28 +173,31 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 
 ## Full Examples
 
-| Package                    | Description                                                                   |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| [fxsound](example-package) | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package  |
-| [another](another-package) | Uses `FileUrl` and `FileDownloadTempPath` for distributing EXE within package |
+| Package                                        | Description                                                                                                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fxsound](example-package-exe-distributed)     | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package                                                                    |
+| [Miro](example-package-url-url64)              | Uses `FileUrl` and `FileUrl64` for updating a package with both 32/64-bit EXEs                                                                  |
+| [StartAllBack](example-package-scrape-version) | Uses `ScrapePattern`, `ScrapeUrl`, and `FileUrl` for scraping version number from a URL, uses `{VERSION}` in FileUrl to be replaced by scraping |
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
-| Parameter                 | Type    | Required                                                                 | Description                                                                                                          |
-| ------------------------- | ------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `-PackageName`            | string  | Yes                                                                      | The name of the package                                                                                              |
-| `-FileUrl`                | string  | Yes                                                                      | The URL to download the file from                                                                                    |
-| `-FileUrl64`              | string  | Yes                                                                      | The URL to download the file from                                                                                    |
-| `-FileDestinationPath`    | string  | Only required if EXE distributed in package                              | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package)                       |
-| `-FileDestinationPath64`  | string  | Only required if url and url64 is used and EXE is distributed in package | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package)                       |
-| `-FileDownloadTempPath`   | string  | No                                                                       | Absolute/relative path to save the file to                                                                           |
-| `-FileDownloadTempPath64` | string  | No                                                                       | Absolute/relative path to save the file to                                                                           |
-| `-NuspecPath`             | string  | No                                                                       | Absolute/relative path to the nuspec file                                                                            |
-| `-InstallScriptPath`      | string  | No                                                                       | Absolute/relative path to the `ChocolateyInstall.ps1` script                                                         |
-| `-VerificationPath`       | string  | No                                                                       | Absolute/relative path to the `VERIFICATION.txt` file                                                                |
-| `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from. |
-| `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                       |
-| `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                               |
+| Parameter                 | Type    | Required                                                                 | Description                                                                                                                                                             |
+| ------------------------- | ------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-PackageName`            | string  | Yes                                                                      | The name of the package.                                                                                                                                                |
+| `-FileUrl`                | string  | Yes                                                                      | The URL to download the file from. If you're using `ScrapeUrl` and `ScrapePattern` you can specify `{VERSION}` in the `FileUrl` and it will download from that FileUrl. |
+| `-FileUrl64`              | string  | Yes                                                                      | The URL to download the file from.                                                                                                                                      |
+| `-FileDestinationPath`    | string  | Only required if EXE distributed in package                              | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                         |
+| `-FileDestinationPath64`  | string  | Only required if url and url64 is used and EXE is distributed in package | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                         |
+| `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from.                                                    |
+| `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                                                                          |
+| `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                                                                                  |
+| `-NuspecPath`             | string  | No                                                                       | **Use not recommended. Recommended using default Choco paths.** Absolute/relative path to the nuspec file                                                               |
+| `-InstallScriptPath`      | string  | No                                                                       | **Use not recommended. Recommended using default Choco paths.** Absolute/relative path to the `ChocolateyInstall.ps1` script                                            |
+| `-VerificationPath`       | string  | No                                                                       | **Use not recommended. Recommended using default Choco paths.** Absolute/relative path to the `VERIFICATION.txt` file                                                   |
+| `-FileDownloadTempPath`   | string  | No                                                                       | **Use not recommended. Recommended using default paths.**Absolute/relative path to save the file to                                                                     |
+| `-FileDownloadTempPath64` | string  | No                                                                       | **Use not recommended. Recommended using default paths.**Absolute/relative path to save the file to                                                                     |
+
+`-ScrapeUrl64` and `-ScrapePattern64` are not options because the version number should be the same regardless of architecture.
 
 ## Script Parameters
 
@@ -228,3 +236,4 @@ param ()
 -   Add to PowerShell Gallery
 -   Add script to Chocolatey as a package
 -   Add more examples
+-   Improve output/debug

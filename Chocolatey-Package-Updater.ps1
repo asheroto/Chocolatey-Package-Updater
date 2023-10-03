@@ -664,11 +664,15 @@ function UpdateChocolateyPackage {
                 HandleUpdateResult -Result $chocolateyInstallVersionResult -SuccessMessage "Updated version in ChocolateyInstall.ps1 script" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallVersionResult"
 
                 # ChocolateyInstall.ps1
-                # Update url
-                Write-Output "Updating URL in ChocolateyInstall.ps1 script (if it exists)..."
-                $chocolateyInstallUrlPattern = '(?i)(?<=(url\s*=\s*)["''])(.*?)(?=["''])'
-                $chocolateyInstallUrlResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrlPattern -Replacement $FileUrl
-                HandleUpdateResult -Result $chocolateyInstallUrlResult -SuccessMessage "Updated URL in ChocolateyInstall.ps1 script" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallUrlResult"
+                # Update url if ForceVersionNumber is not set
+                if (-not $ForceVersionNumber) {
+                    Write-Output "Updating URL in ChocolateyInstall.ps1 script (if it exists)..."
+                    $chocolateyInstallUrlPattern = '(?i)(?<=(url\s*=\s*)["''])(.*?)(?=["''])'
+                    $chocolateyInstallUrlResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrlPattern -Replacement $FileUrl
+                    HandleUpdateResult -Result $chocolateyInstallUrlResult -SuccessMessage "Updated URL in ChocolateyInstall.ps1 script" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallUrlResult"
+                } else {
+                    Write-Output "Version replacement is occurring in ChocolateyInstall.ps1 script. Skipping URL update in script."
+                }
 
                 # ChocolateyInstall.ps1
                 # Update checksum
@@ -679,11 +683,15 @@ function UpdateChocolateyPackage {
                 # ChocolateyInstall.ps1
                 # Update url64 and checksum64
                 if ($FileUrl64 -and $FileDownloadTempPath64) {
-                    # Update the url64 or url64bit in ChocolateyInstall.ps1
-                    Write-Output "Updating url64 or url64bit in ChocolateyInstall.ps1 script (if it exists)..."
-                    $chocolateyInstallUrl64Pattern = '(?i)(?<=(url64bit\s*=\s*)["''])(.*?)(?=["''])|(?i)(?<=(url64\s*=\s*)["''])(.*?)(?=["''])'
-                    $chocolateyInstallUrl64Result = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrl64Pattern -Replacement $FileUrl64
-                    HandleUpdateResult -Result $chocolateyInstallUrl64Result -SuccessMessage "Updated URL64 in ChocolateyInstall.ps1 script" -FailureMessage "Did not update URL64 in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallUrl64Result"
+                    # Update the url64 or url64bit in ChocolateyInstall.ps1 if ForceVersionNumber is not set
+                    if (-not $ForceVersionNumber) {
+                        Write-Output "Updating url64 or url64bit in ChocolateyInstall.ps1 script (if it exists)..."
+                        $chocolateyInstallUrl64Pattern = '(?i)(?<=(url64bit\s*=\s*)["''])(.*?)(?=["''])|(?i)(?<=(url64\s*=\s*)["''])(.*?)(?=["''])'
+                        $chocolateyInstallUrl64Result = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrl64Pattern -Replacement $FileUrl64
+                        HandleUpdateResult -Result $chocolateyInstallUrl64Result -SuccessMessage "Updated URL64 in ChocolateyInstall.ps1 script" -FailureMessage "Did not update URL64 in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallUrl64Result"
+                    } else {
+                        Write-Output "Version replacement is occurring in ChocolateyInstall.ps1 script. Skipping URL64 update in script."
+                    }
 
                     # Update the checksum64 in ChocolateyInstall.ps1
                     Write-Output "Updating checksum64 in ChocolateyInstall.ps1 script (if it exists)..."
