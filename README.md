@@ -77,14 +77,14 @@ Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. 
 
 You may have to change the path to the `Chocolatey-Package-Updater.ps1` script depending on where you place it, but if you place it in the root folder as described in the and your `update.ps1` file is in a sub-folder (as described in the [Recommended Folder Structure](#recommended-folder-structure)), you can use the following code verbatim.
 
-**Note:** The $ScriptPath variable _must_ be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
+**Note:** The $ScriptPath variable **_must_** be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
 
 #### Example using file distributed in package
 
 This method corresponds to the [example-package-exe-distributed](example-package-exe-distributed) example package.
 
 ```powershell
-# Set vars to the script and the parent path
+# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $ParentPath = Split-Path -Parent $ScriptPath
 
@@ -108,7 +108,7 @@ UpdateChocolateyPackage @packageInfo
 This method corresponds to the [example-package-url-url64](example-package-url-url64) example package.
 
 ```powershell
-# Set vars to the script and the parent path
+# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $ParentPath = Split-Path -Parent $ScriptPath
 
@@ -132,7 +132,7 @@ UpdateChocolateyPackage @packageInfo
 This method corresponds to the [example-package-scrape-version](example-package-scrape-version) example package.
 
 ```powershell
-# Set vars to the script and the parent path
+# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $ParentPath = Split-Path -Parent $ScriptPath
 
