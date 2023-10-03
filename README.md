@@ -197,7 +197,7 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
     -   To avoid permission issues
 -   `Run whether user is logged in or not`
     -   Will make the script run behind-the-scenes as well as hide the window. If you'd rather not use this, you can use my tool [SpawnProcess](https://github.com/asheroto/SpawnProcess) and use `SpawnProcess.exe` or `SpawnProcessHidden.exe` which will launch a hidden. [Example usage](https://github.com/asheroto/SpawnProcess#spawnprocesshidden-example-such-as-from-task-scheduler-example).
--   Schedule as often as you'd like, usually weekly or daily. Recommended not more than once per day.
+-   Schedule as often as you'd like, usually weekly or daily. Recommended twice a week, not more than once per day.
 -   Consider changing the power/battery options in the `Conditions` tab.
 
 ## Full Examples
