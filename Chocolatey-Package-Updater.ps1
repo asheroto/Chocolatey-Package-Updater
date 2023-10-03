@@ -760,12 +760,12 @@ function UpdateChocolateyPackage {
             Write-Output "Invalid version format. Skipping update."
 
             # Send an alert if enabled
-            Write-Debug "Sending alert..."
+            Write-Debug "Sending package error alert..."
             SendAlert -Subject "$PackageName Package Error" -Message "$PackageName detected an invalid version format. Please check the update script and files." -Alert $Alert
         }
     } catch {
         # Send an alert if enabled
-        Write-Debug "Sending alert..."
+        Write-Debug "Sending package error alert..."
         SendAlert -Subject "$PackageName Package Error" -Message "$PackageName had an error when checking for updates. Please check the update script and files.<br><br><strong>Error:</strong> $_" -Alert $Alert
 
         # Write the error to the console

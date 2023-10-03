@@ -171,7 +171,7 @@ UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startall
 
 ### Step 2 - Schedule the PowerShell Script
 
-You can use Windows Task Scheduler to schedule the `update.ps1` script to run automatically.
+You can use Windows Task Scheduler to schedule the `update.ps1` script to run automatically. It is recommended that you create an `UpdateAll.ps1` script in the same folder as `Chocolatey-Package-Updater.ps1` and schedule that script to run. See the [UpdateAll.ps1](UpdateAll.ps1) script in this repository for an example.
 
 In Task Scheduler, create a new Task (not basic) and set the `Action` to the following:
 
@@ -180,6 +180,12 @@ pwsh -Command "& 'YOUR_SCRIPT_PATH_HERE'"
 ```
 
 for example
+
+```powershell
+pwsh -Command "& 'C:\Projects\ChocolateyPackages\UpdateAll.ps1'"
+```
+
+or if you don't want to use the `UpdateAll.ps1` script, you can use the `update.ps1` script of the package directly:
 
 ```powershell
 pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
