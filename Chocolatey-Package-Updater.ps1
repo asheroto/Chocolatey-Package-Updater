@@ -387,6 +387,12 @@ function UpdateChocolateyPackage {
         [string]$FileDownloadTempPath,
 
         [Parameter(Mandatory = $false)]
+        [string]$FileDownloadTempPath64,
+
+        [Parameter(Mandatory = $false)]
+        [string]$FileDestinationPath,
+
+        [Parameter(Mandatory = $false)]
         [string]$FileDestinationPath64,
 
         [Parameter(Mandatory = $false)]
@@ -400,12 +406,6 @@ function UpdateChocolateyPackage {
 
         [Parameter(Mandatory = $false)]
         [boolean]$Alert = $true,
-
-        [Parameter(Mandatory = $false)]
-        [boolean]$FileDownloadTempDelete = $true,
-
-        [Parameter(Mandatory = $false)]
-        [string]$RepoUrl,
 
         [Parameter(Mandatory = $false)]
         [string]$ScrapeUrl,
@@ -723,6 +723,16 @@ function UpdateChocolateyPackage {
                         Move-Item $FileDownloadTempPath -Destination $FileDestinationPath -Force
                     } catch {
                         throw "Failed to move file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`" with error: $_"
+                    }
+                }
+
+                # If the destination path is specified, move the downloaded file to the specified destination for 64-bit
+                if ($FileUrl64 -and $FileDestinationPath64) {
+                    Write-Debug "Moving file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`""
+                    try {
+                        Move-Item $FileDownloadTempPath64 -Destination $FileDestinationPath64 -Force
+                    } catch {
+                        throw "Failed to move file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`" with error: $_"
                     }
                 }
             } else {

@@ -1,6 +1,6 @@
 # Chocolatey-Package-Updater
 
-![Chocolatey Package Updater screenshot](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/203952c3-d1bb-44ca-8514-3d6015ce8f4a)
+![Chocolatey Package Updater screenshot](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/cbcb42cb-08d1-4b2f-9e15-51df062da47b)
 
 [![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/asheroto/Chocolatey-Package-Updater)](https://github.com/asheroto/Chocolatey-Package-Updater/releases)
 [![GitHub Downloads - All Releases](https://img.shields.io/github/downloads/asheroto/Chocolatey-Package-Updater/total)](https://github.com/asheroto/Chocolatey-Package-Updater/releases)
@@ -64,16 +64,12 @@ The recommended folder structure matches this repository's structure. You can us
         -   tools
             -   ChocolateyInstall.ps1
             -   fxsound_setup.exe
-            -   legal
-                -   VERIFICATION.txt
-    -   another-package
+            -   VERIFICATION.txt
+    -   example-package2
         -   update.ps1
-        -   another.nuspec
+        -   Miro.nuspec
         -   tools
             -   ChocolateyInstall.ps1
-            -   another_setup.exe
-            -   legal
-                -   VERIFICATION.txt
 
 ## Usage
 
@@ -86,6 +82,8 @@ Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. 
 You may have to change the path to the `Chocolatey-Package-Updater.ps1` script depending on where you place it, but if you place it in the root folder as described in the and your `update.ps1` file is in a sub-folder (as described in the [Recommended Folder Structure](#recommended-folder-structure)), you can use the following code verbatim.
 
 **Note:** The $ScriptPath variable _must_ be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
+
+#### Example using file distributed in package
 
 ```powershell
 # Set vars to the script and the parent path
@@ -107,12 +105,38 @@ $packageInfo = @{
 UpdateChocolateyPackage @packageInfo
 ```
 
+#### Example using url and url64:
+
+```powershell
+# Set vars to the script and the parent path
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ParentPath = Split-Path -Parent $ScriptPath
+
+# Import the UpdateChocolateyPackage function
+. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
+
+# Create a hash table to store package information
+$packageInfo = @{
+    PackageName = "miro"
+    FileUrl     = 'https://desktop.miro.com/platforms/win32-x86/Miro.exe'   # URL to download the file from
+    FileUrl64   = 'https://desktop.miro.com/platforms/win32/Miro.exe'       # URL to download the file from
+    Alert       = $true                                                     # If the package is updated, send a message to the maintainer for review
+}
+
+# Call the UpdateChocolateyPackage function and pass the hash table
+UpdateChocolateyPackage @packageInfo
+```
+
 ### Alternate method using named parameters
 
 The splatting method above is recommended because it's easier to read and maintain, but if you'd rather use named parameters, you can do so like this:
 
 ```powershell
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true
+```
+
+```powershell
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe' -Alert $true
 ```
 
 ---
@@ -151,19 +175,21 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
-| Parameter                 | Type    | Required | Description                                                                                                          |
-| ------------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `-PackageName`            | string  | Yes      | The name of the package                                                                                              |
-| `-FileUrl`                | string  | Yes      | The URL to download the file from                                                                                    |
-| `-FileDownloadTempPath`   | string  | No       | The path to save the file to                                                                                         |
-| `-FileDownloadTempDelete` | boolean | No       | Delete the temporary file after downloading and comparing to existing version & checksum                             |
-| `-FileDestinationPath`    | string  | No       | The path to move/rename the temporary file to (if EXE is distributed in package)                                     |
-| `-NuspecPath`             | string  | No       | The path to the nuspec file                                                                                          |
-| `-InstallScriptPath`      | string  | No       | The path to the `ChocolateyInstall.ps1` script                                                                       |
-| `-VerificationPath`       | string  | No       | The path to the `VERIFICATION.txt` file                                                                              |
-| `-ScrapeUrl`              | string  | No       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from. |
-| `-ScrapePattern`          | string  | No       | The regex pattern to use when scraping the version number from the scrape URL.                                       |
-| `-Alert`                  | boolean | No       | If the package is updated, send a message to the maintainer for review                                               |
+| Parameter                 | Type    | Required                                                                 | Description                                                                                                          |
+| ------------------------- | ------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `-PackageName`            | string  | Yes                                                                      | The name of the package                                                                                              |
+| `-FileUrl`                | string  | Yes                                                                      | The URL to download the file from                                                                                    |
+| `-FileUrl64`              | string  | Yes                                                                      | The URL to download the file from                                                                                    |
+| `-FileDestinationPath`    | string  | Only required if EXE distributed in package                              | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package)                       |
+| `-FileDestinationPath64`  | string  | Only required if url and url64 is used and EXE is distributed in package | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package)                       |
+| `-FileDownloadTempPath`   | string  | No                                                                       | Absolute/relative path to save the file to                                                                           |
+| `-FileDownloadTempPath64` | string  | No                                                                       | Absolute/relative path to save the file to                                                                           |
+| `-NuspecPath`             | string  | No                                                                       | Absolute/relative path to the nuspec file                                                                            |
+| `-InstallScriptPath`      | string  | No                                                                       | Absolute/relative path to the `ChocolateyInstall.ps1` script                                                         |
+| `-VerificationPath`       | string  | No                                                                       | Absolute/relative path to the `VERIFICATION.txt` file                                                                |
+| `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from. |
+| `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                       |
+| `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                               |
 
 ## Script Parameters
 
@@ -176,7 +202,7 @@ param ()
 
 <details><summary>Screenshot of -Debug output</summary>
 <p>
-<img src="https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/bb4e8622-1aff-4a4d-9d0c-8e10f27cd579" alt="-Debug output">
+<img src="https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/aaf9d230-b1cd-4879-8cef-66b7a23e0a26" alt="-Debug output">
 </p>
 </details>
 
@@ -201,5 +227,4 @@ param ()
 -   Add `ntfy.sh` support
 -   Add to PowerShell Gallery
 -   Add script to Chocolatey as a package
--   Add support for Checksum32/Checksum64
 -   Add more examples
