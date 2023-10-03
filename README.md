@@ -21,7 +21,7 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 
 The `UpdateChocolateyPackage` function provides the following features:
 
--   No functions or regex expressions to write: everything happens automatically!
+-   **No functions or regex expressions to write: everything happens _automatically_!**
 -   Updates the version in the nuspec file.
 -   Updates the url/version/checksum in the `ChocolateyInstall.ps1` script.
 -   Updates the checksum in the `VERIFICATION.txt` file (if it exists).
@@ -54,7 +54,9 @@ The `UpdateChocolateyPackage` function operates in the following steps:
 
 ## Recommended Folder Structure
 
--   Root Folder
+The recommended folder structure matches this repository's structure. You can use this as a template for your own Chocolatey packages repository.
+
+-   ChocolateyPackages
     -   Chocolatey-Package-Updater.ps1
     -   example-package
         -   update.ps1
@@ -75,13 +77,15 @@ The `UpdateChocolateyPackage` function operates in the following steps:
 
 ## Usage
 
-Don't worry, it's not hard! There's an example [update.ps1](example-package/update.ps1) file and a [full package example](example-package) available on this repo in case you get stuck.
+### Step 1 - Create an `update.ps1` file
 
-### Step 1 - Dot-Source the Functions
+Match the [Recommended Folder Structure](#recommended-folder-structure) and create an `update.ps1` file in the folder of your Chocolatey package (`example-package` in the example).
 
 Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. Then call the `UpdateChocolateyPackage` function with the required parameters.
 
 You may have to change the path to the `Chocolatey-Package-Updater.ps1` script depending on where you place it, but if you place it in the root folder as described in the and your `update.ps1` file is in a sub-folder (as described in the [Recommended Folder Structure](#recommended-folder-structure)), you can use the following code verbatim.
+
+**Note:** The $ScriptPath variable _must_ be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
 
 ```powershell
 # Set vars to the script and the parent path
@@ -90,23 +94,7 @@ $ParentPath = Split-Path -Parent $ScriptPath
 
 # Import the UpdateChocolateyPackage function
 . (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
-```
 
-You can call the `UpdateChocolateyPackage` function with either **named parameters** or **splatting** (similar to what many `ChocolateyInstall.ps1` packages do).
-
----
-
-### Step 2 (option #1) - Update Using Named Parameters
-
-```powershell
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true
-```
-
-The command above does the same thing as the command below, it's just a different way to issue the update command.
-
-### Step 2 (option #2) - Update Using Splatting (Hash Table)
-
-```powershell
 # Create a hash table to store package information
 $packageInfo = @{
     PackageName         = "fxsound"
@@ -119,9 +107,17 @@ $packageInfo = @{
 UpdateChocolateyPackage @packageInfo
 ```
 
+### Alternate method using named parameters
+
+The splatting method above is recommended because it's easier to read and maintain, but if you'd rather use named parameters, you can do so like this:
+
+```powershell
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true
+```
+
 ---
 
-### Step 3 - Schedule the PowerShell Script
+### Step 2 - Schedule the PowerShell Script
 
 You can use Windows Task Scheduler to schedule the `update.ps1` script to run automatically.
 
@@ -146,9 +142,12 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 -   Schedule as often as you'd like, usually weekly or daily. Recommended not more than once per day.
 -   Consider changing the power/battery options in the `Conditions` tab.
 
-## Example Chocolatey Package
+## Full Examples
 
-Included in this repository is a real-world example using [FxSound](example-package).
+| Package                    | Description                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| [fxsound](example-package) | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package  |
+| [another](another-package) | Uses `FileUrl` and `FileDownloadTempPath` for distributing EXE within package |
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
