@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.4
+.VERSION 0.0.5
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -17,6 +17,7 @@
 [Version 0.0.2] - Fixed wrong checksum variable being used
 [Version 0.0.3] - Added support for stripping out the version number from the Product Version, as well as checking the File Version if the Product Version is not available. Improved pattern matching. Remove extra debug statements. Added logic to check if VERIFICATION.txt checksum changed. Add -Version and -CheckForUpdate parameters and logic. Added supported for ScrapeUrl, ScrapePattern, and VERSION replacement in URL.
 [Version 0.0.4] - Major improvements. Added support for FileUrl64, checksum64.
+[Version 0.0.5] - Abstracted version/checksum comparison into its own function.
 
 #>
 
@@ -44,7 +45,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.4
+- Version: 0.0.5
 - Created by: asheroto
 
 .LINK
@@ -57,7 +58,7 @@ param (
     [switch]$CheckForUpdate
 )
 
-$CurrentVersion = '0.0.4'
+$CurrentVersion = '0.0.5'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $PowerShellGalleryName = 'Chocolatey-Package-Updater'
@@ -521,6 +522,42 @@ function UpdateChocolateyPackage {
         return $ProductVersion
     }
 
+    function PerformComparison {
+        param (
+            [string]$ProductVersion,
+            [string]$NuspecVersion,
+            [string]$ChocolateyInstallChecksum,
+            [string]$NewChecksum,
+            [string]$ChocolateyInstallChecksum64,
+            [string]$NewChecksum64,
+            [string]$VerificationPath,
+            [string]$VerificationChecksum,
+            [string]$VerificationChecksum64,
+            [string]$FileUrl64
+        )
+
+        $result = @{}
+        $result["ProductVersion"] = $ProductVersion -eq $NuspecVersion
+        $result["ChocolateyInstallChecksum"] = $ChocolateyInstallChecksum -eq $NewChecksum
+
+        if ($FileUrl64) {
+            $result["ChocolateyInstallChecksum64"] = $ChocolateyInstallChecksum64 -eq $NewChecksum64
+        }
+
+        if (Test-Path $VerificationPath) {
+            $result["VerificationChecksum"] = $VerificationChecksum -eq $NewChecksum
+
+            if ($FileUrl64) {
+                $result["VerificationChecksum64"] = $VerificationChecksum64 -eq $NewChecksum64
+            }
+        }
+
+        $result["OverallComparison"] = $result.Values -contains $false
+
+        Write-Debug "Comparison results: $($result | Out-String)"
+        return $result
+    }
+
     try {
         # Heading
         Write-Output ''
@@ -651,11 +688,8 @@ function UpdateChocolateyPackage {
 
             # Compare versions, compare ChocolateyInstall.ps1 checksum, and compare VERIFICATION.txt checksum if $VerificationPath is set and the file exists
             Write-Output "Comparing versions and checksums..."
-            if ($ProductVersion -ne $NuspecVersion `
-                    -or $ChocolateyInstallChecksum -ne $NewChecksum `
-                    -or $ChocolateyInstallChecksum64 -ne $NewChecksum64 `
-                    -or ((Test-Path $VerificationPath) -and $VerificationChecksum -ne $NewChecksum) `
-                    -or ((Test-Path $VerificationPath) -and $VerificationChecksum64 -ne $NewChecksum64)) {
+            $comparisonResult = PerformComparison -ProductVersion $ProductVersion -NuspecVersion $NuspecVersion -ChocolateyInstallChecksum $ChocolateyInstallChecksum -NewChecksum $NewChecksum -ChocolateyInstallChecksum64 $ChocolateyInstallChecksum64 -NewChecksum64 $NewChecksum64 -VerificationPath $VerificationPath -VerificationChecksum $VerificationChecksum -VerificationChecksum64 $VerificationChecksum64 -FileUrl64 $FileUrl64
+            if ($comparisonResult["OverallComparison"]) {
                 Write-Output "Version or checksum is different. Updating package..."
 
                 # nuspec file
@@ -753,7 +787,7 @@ function UpdateChocolateyPackage {
                 }
             } else {
                 # Package is up to date
-                Write-Output "No update needed."
+                Write-Output "No update needed. No alert sent."
             }
         } else {
             # Invalid version format
