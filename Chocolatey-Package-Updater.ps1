@@ -256,8 +256,12 @@ function SendAlertRaw {
     $alertUrl = $alertUrl -replace '{MESSAGE}', $Message
 
     if ($alertUrl) {
-        Invoke-WebRequest -Uri $alertUrl -Method Post -Body $Message -ContentType "text/plain" | Out-Null
-        Write-Output "Alert sent."
+        try {
+            Invoke-WebRequest -Uri $alertUrl -Method Post -Body $Message -ContentType "text/plain" | Out-Null
+            Write-Output "Alert sent."
+        } catch {
+            Write-Warning "Failed to send alert."
+        }
     }
 }
 
@@ -518,6 +522,10 @@ function UpdateChocolateyPackage {
     }
 
     try {
+        # Heading
+        Write-Output ''
+        Write-Section "Updating package: $PackageName"
+
         # Initialization and Path Management
         Push-Location
         Set-Location $ScriptPath

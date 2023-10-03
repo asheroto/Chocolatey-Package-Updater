@@ -34,6 +34,8 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Supports scraping the version number from the download URL.
 -   Supports version number replacement in the download URL.
 
+**ALERT NOTE:** Right now alerting is in beta and won't work unless you update the `SendAlertRaw` function. I'm working on adding native support for other services.
+
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
 ## Requirements
