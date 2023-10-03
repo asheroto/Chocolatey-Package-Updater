@@ -132,6 +132,28 @@ $packageInfo = @{
 UpdateChocolateyPackage @packageInfo
 ```
 
+#### Example using ScrapeUrl, ScrapePattern, FileUrl version replacement
+
+```powershell
+# Set vars to the script and the parent path
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ParentPath = Split-Path -Parent $ScriptPath
+
+# Import the UpdateChocolateyPackage function
+. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
+
+# Create a hash table to store package information
+$packageInfo = @{
+    PackageName   = "StartAllBack"                                                                                  # Package name
+    ScrapeUrl     = 'https://startallback.com/'                                                                     # URL to scrape for version number
+    ScrapePattern = '(?<=<span class="title">Download v)[\d.]+'                                                     # Regex pattern to match version number
+    FileUrl       = "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"          # URL to download the file from
+}
+
+# Call the UpdateChocolateyPackage function and pass the hash table
+UpdateChocolateyPackage @packageInfo
+```
+
 ### Alternate method using named parameters
 
 The splatting method above is recommended because it's easier to read and maintain, but if you'd rather use named parameters, you can do so like this:
@@ -142,6 +164,10 @@ UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsoun
 
 ```powershell
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe' -Alert $true
+```
+
+```powershell
+UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startallback.com/' -ScrapePattern '(?<=<span class="title">Download v)[\d.]+' -FileUrl "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"
 ```
 
 ---
