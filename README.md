@@ -19,6 +19,8 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 
 ## Features
 
+**ALERT NOTE:** Right now alerting is in still a work in progress and won't work. I'm working on adding native support for other services. You can use $Alert = false to disable alerting for now or update the `SendAlertRaw` function to use your own service.
+
 The `UpdateChocolateyPackage` function provides the following features:
 
 -   **No functions or regex expressions to write: everything happens _automatically_!**
@@ -35,8 +37,6 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Supports version number replacement in the download URL.
 
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
-
-**ALERT NOTE:** Right now alerting is in still a work in progress and won't work. I'm working on adding native support for other services. You can use $Alert = false to disable alerting for now or update the `SendAlertRaw` function to use your own service.
 
 ## Requirements
 
