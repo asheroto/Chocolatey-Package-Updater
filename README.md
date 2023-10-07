@@ -35,6 +35,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Automatic support for [aria2](https://github.com/aria2/aria2) download manager as well as `Invoke-WebRequest`.
 -   Supports scraping the version number from the download URL.
 -   Supports version number replacement in the download URL.
+-   Supports getting the latest version from a GitHub repository.
 
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
@@ -151,6 +152,17 @@ $packageInfo = @{
 UpdateChocolateyPackage @packageInfo
 ```
 
+#### Example using GitHub release
+
+```powershell
+# Create a hash table to store package information
+$packageInfo = @{
+    PackageName   = "ventoy"
+    FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"
+    GitHubRepoUrl = "https://github.com/ventoy/Ventoy"
+}
+```
+
 ### Alternate method using named parameters
 
 The splatting method above is recommended because it's easier to read and maintain, but if you'd rather use named parameters, you can do so like this:
@@ -165,6 +177,10 @@ UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.co
 
 ```powershell
 UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startallback.com/' -ScrapePattern '(?<=<span class="title">Download v)[\d.]+' -FileUrl "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"
+```
+
+```powershell
+UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip" -GitHubRepoUrl "https://github.com/ventoy/Ventoy"
 ```
 
 ---
@@ -217,6 +233,7 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 | `-FileUrl64`              | string  | Yes                                                                      | The URL to download the file from.                                                                                                                                      |
 | `-FileDestinationPath`    | string  | Only required if EXE distributed in package                              | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                         |
 | `-FileDestinationPath64`  | string  | Only required if url and url64 is used and EXE is distributed in package | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                         |
+| `-GitHubRepoUrl`          | string  | No                                                                       | The URL to the GitHub repository. If specified, the latest release will be downloaded using `{VERSION}` replacement in the `FileUrl`.                                   |
 | `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from.                                                    |
 | `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                                                                          |
 | `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                                                                                  |

@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.5
+.VERSION 0.0.6
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -18,6 +18,7 @@
 [Version 0.0.3] - Added support for stripping out the version number from the Product Version, as well as checking the File Version if the Product Version is not available. Improved pattern matching. Remove extra debug statements. Added logic to check if VERIFICATION.txt checksum changed. Add -Version and -CheckForUpdate parameters and logic. Added supported for ScrapeUrl, ScrapePattern, and VERSION replacement in URL.
 [Version 0.0.4] - Major improvements. Added support for FileUrl64, checksum64.
 [Version 0.0.5] - Abstracted version/checksum comparison into its own function.
+[Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API.
 
 #>
 
@@ -28,13 +29,19 @@ Streamline the management of Chocolatey packages by automating version updates, 
 
 .DESCRIPTION
 The script simplifies the process of updating Chocolatey packages by providing automated functionality to:
-- Update the version in the nuspec file.
-- Update the checksum/checksum64 in the install script.
-- Update the checksum/checksum64 in the verification file (if it exists).
-- Send alerts to a designated URL.
-- Support EXE files distributed in the package.
-- Support variable and hash table formats for checksums in the install script.
-- Support single and double quotes for checksums in the install script.
+- No functions or regex expressions to write: everything happens automatically!
+- Updates the version in the nuspec file.
+- Updates the url/checksum and url64/checksum64 (if specified) in the ChocolateyInstall.ps1 script.
+- Updates the checksum and checksum64 (if specified) in the VERIFICATION.txt file (if it exists).
+- Updates the version number in the download URL (if specified).
+- Sends an alert to a designated URL.
+- Supports EXE files distributed in the package.
+- Supports variable and hash table formats for checksum in the ChocolateyInstall.ps1 script.
+- Supports single and double quotes for checksum in the ChocolateyInstall.ps1 script.
+- Automatic support for aria2 download manager as well as Invoke-WebRequest.
+- Supports scraping the version number from the download URL.
+- Supports version number replacement in the download URL.
+- Supports getting the latest version from a GitHub repository.
 
 .EXAMPLE
 To update a Chocolatey package, run the following command:
@@ -45,7 +52,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.5
+- Version: 0.0.6
 - Created by: asheroto
 
 .LINK
@@ -58,7 +65,7 @@ param (
     [switch]$CheckForUpdate
 )
 
-$CurrentVersion = '0.0.5'
+$CurrentVersion = '0.0.6'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $PowerShellGalleryName = 'Chocolatey-Package-Updater'
@@ -376,6 +383,31 @@ function Write-Section {
     & $writeCmd $divider
 }
 
+function Get-LatestGitHubReleaseVersion {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$GitHubRepoUrl
+    )
+
+    # Extract the username and repo name from the provided URL
+    $repoDetails = $GitHubRepoUrl -replace '^https://github.com/', '' -split '/'
+
+    $username = $repoDetails[0]
+    $repoName = $repoDetails[1]
+
+    $apiUrl = "https://api.github.com/repos/$username/$repoName/releases/latest"
+
+    $response = Invoke-RestMethod -Uri $apiUrl
+    $latestVersionTag = $response.tag_name
+
+    # Use regex to extract version number
+    if ($latestVersionTag -match '(\d+\.\d+\.\d+)') {
+        return $matches[1]
+    } else {
+        throw "Failed to extract version from tag: $latestVersionTag"
+    }
+}
+
 function UpdateChocolateyPackage {
     [CmdletBinding()]
     param (
@@ -416,32 +448,31 @@ function UpdateChocolateyPackage {
         [string]$ScrapeUrl,
 
         [Parameter(Mandatory = $false)]
-        [string]$ScrapePattern
+        [string]$ScrapePattern,
+
+        [Parameter(Mandatory = $false)]
+        [string]$GitHubRepoUrl
     )
 
     function CleanupFileDownload {
         # Check if FileDownloadTempDelete is not set
-        if (-not $FileDownloadTempDelete) {
-            Write-Debug "Temporary file deletion is disabled."
-        } else {
-            # Check if the file exists at the specified path
-            if (Test-Path $FileDownloadTempPath) {
-                try {
-                    Write-Debug "Removing temporary file: $FileDownloadTempPath"
-                    Remove-Item $FileDownloadTempPath -Force
-                } catch {
-                    Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
-                }
+        # Check if the file exists at the specified path
+        if (Test-Path $FileDownloadTempPath) {
+            try {
+                Write-Debug "Removing temporary file: $FileDownloadTempPath"
+                Remove-Item $FileDownloadTempPath -Force
+            } catch {
+                Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
             }
+        }
 
-            # If FileUrl64 is used, check if the file exists at the specified path
-            if ($FileUrl64 -and (Test-Path $FileDownloadTempPath64)) {
-                try {
-                    Write-Debug "Removing temporary file: $FileDownloadTempPath64"
-                    Remove-Item $FileDownloadTempPath64 -Force
-                } catch {
-                    Write-Warning "Failed to remove temporary file: $FileDownloadTempPath64"
-                }
+        # If FileUrl64 is used, check if the file exists at the specified path
+        if ($FileUrl64 -and (Test-Path $FileDownloadTempPath64)) {
+            try {
+                Write-Debug "Removing temporary file: $FileDownloadTempPath64"
+                Remove-Item $FileDownloadTempPath64 -Force
+            } catch {
+                Write-Warning "Failed to remove temporary file: $FileDownloadTempPath64"
             }
         }
     }
@@ -590,6 +621,12 @@ function UpdateChocolateyPackage {
             } else {
                 throw "No match found or invalid version."
             }
+        }
+
+        # If GitHubRepoUrl is specified, get the latest version from GitHub
+        if ($GitHubRepoUrl) {
+            Write-Debug "GitHub repo URL: $GitHubRepoUrl"
+            $ForceVersionNumber = Get-LatestGitHubReleaseVersion -GitHubRepoUrl $GitHubRepoUrl
         }
 
         # URL Modification with Version Number
