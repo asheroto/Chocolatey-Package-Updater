@@ -18,7 +18,7 @@
 [Version 0.0.3] - Added support for stripping out the version number from the Product Version, as well as checking the File Version if the Product Version is not available. Improved pattern matching. Remove extra debug statements. Added logic to check if VERIFICATION.txt checksum changed. Add -Version and -CheckForUpdate parameters and logic. Added supported for ScrapeUrl, ScrapePattern, and VERSION replacement in URL.
 [Version 0.0.4] - Major improvements. Added support for FileUrl64, checksum64.
 [Version 0.0.5] - Abstracted version/checksum comparison into its own function.
-[Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API.
+[Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API. Added GitHub repo example.
 
 #>
 
