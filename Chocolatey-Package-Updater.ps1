@@ -459,8 +459,12 @@ function UpdateChocolateyPackage {
         # Check if the file exists at the specified path
         if (Test-Path $FileDownloadTempPath) {
             try {
+                # Sleep for 1 second to allow the file to be released by the process
+                Sleep -Seconds 1
+
+                # Remove the file
                 Write-Debug "Removing temporary file: $FileDownloadTempPath"
-                Remove-Item $FileDownloadTempPath -Force
+                Remove-Item $FileDownloadTempPath -Force -ErrorAction Stop
             } catch {
                 Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
             }
@@ -599,6 +603,9 @@ function UpdateChocolateyPackage {
         Set-Location $ScriptPath
         Write-Debug "Current directory: $pwd"
 
+        # Temporary File Cleanup
+        CleanupFileDownload
+
         # FileDownloadTempPath Management
         if (-not $FileDownloadTempPath) {
             $FileDownloadTempPath = Join-Path -Path $env:TEMP -ChildPath "${PackageName}_setup_temp.exe"
@@ -636,9 +643,6 @@ function UpdateChocolateyPackage {
         if ($ForceVersionNumber -and $FileUrl64) {
             $FileUrl64 = $FileUrl64 -replace '{VERSION}', $ForceVersionNumber
         }
-
-        # Temporary File Cleanup
-        CleanupFileDownload
 
         # File Download and Product Version
         DownloadFile -Url $FileUrl -TempPath $FileDownloadTempPath

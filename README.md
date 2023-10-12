@@ -284,3 +284,4 @@ param ()
 -   Add more examples
 -   Improve output/debug
 -   Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
+-   Add check for missing nuspec
