@@ -80,9 +80,7 @@ You may have to change the path to the `Chocolatey-Package-Updater.ps1` script d
 
 **Note:** The $ScriptPath variable **_must_** be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
 
-#### Example using file distributed in package
-
-This method corresponds to the [example-package-exe-distributed](example-package-exe-distributed) example package.
+#### Required code at the top of any `update.ps1` script
 
 ```powershell
 # Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
@@ -91,7 +89,13 @@ $ParentPath = Split-Path -Parent $ScriptPath
 
 # Import the UpdateChocolateyPackage function
 . (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
+```
 
+#### Example using file distributed in package
+
+This method corresponds to the [example-package-exe-distributed](example-package-exe-distributed) example package.
+
+```powershell
 # Create a hash table to store package information
 $packageInfo = @{
     PackageName         = "fxsound"
@@ -109,13 +113,6 @@ UpdateChocolateyPackage @packageInfo
 This method corresponds to the [example-package-url-url64](example-package-url-url64) example package.
 
 ```powershell
-# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$ParentPath = Split-Path -Parent $ScriptPath
-
-# Import the UpdateChocolateyPackage function
-. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
-
 # Create a hash table to store package information
 $packageInfo = @{
     PackageName = "miro"
@@ -133,13 +130,6 @@ UpdateChocolateyPackage @packageInfo
 This method corresponds to the [example-package-scrape-version](example-package-scrape-version) example package.
 
 ```powershell
-# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$ParentPath = Split-Path -Parent $ScriptPath
-
-# Import the UpdateChocolateyPackage function
-. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
-
 # Create a hash table to store package information
 $packageInfo = @{
     PackageName   = "StartAllBack"                                                                                  # Package name
@@ -161,6 +151,9 @@ $packageInfo = @{
     FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"
     GitHubRepoUrl = "https://github.com/ventoy/Ventoy"
 }
+
+# Call the UpdateChocolateyPackage function and pass the hash table
+UpdateChocolateyPackage @packageInfo
 ```
 
 ### Alternate method using named parameters
