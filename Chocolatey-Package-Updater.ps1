@@ -737,6 +737,7 @@ function UpdateChocolateyPackage {
                 # Update version
                 Write-Output "Updating version in nuspec file..."
                 $nuspecResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(?<=<version>).*?(?=<\/version>)' -Replacement $ProductVersion
+                
                 HandleUpdateResult -Result $nuspecResult -SuccessMessage "Updated version in nuspec file" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`n$nuspecResult"
 
                 # ChocolateyInstall.ps1
