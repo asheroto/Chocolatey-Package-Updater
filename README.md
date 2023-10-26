@@ -144,6 +144,8 @@ UpdateChocolateyPackage @packageInfo
 
 #### Example using GitHub release
 
+This method corresponds to the [example-package-github-repo](example-package-github-repo) example package.
+
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
