@@ -52,7 +52,7 @@ Currently, there is no installer for this script. To get started, follow these s
 1. **Download** the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
 2. **Move** the downloaded script into the root directory of your Chocolatey packages repository like the **Recommended Folder Structure** below.
 3. **Create** an `update.ps1` file within the folder of your specific Chocolatey package per the examples below.
-4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by dot-sourcing it. 
+4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by [dot-sourcing it](#required-code-at-the-top-of-any-updateps1-script).
 5. **Call** the `UpdateChocolateyPackage` function, passing in the necessary parameters.
 
 After everything is created the first time, you can simply copy and paste `update.ps1` as needed or copy from these examples.
@@ -84,7 +84,7 @@ For a practical example of how to set up your Chocolatey packages, you can check
 
 ## Usage
 
-### Step 1 - Create an `update.ps1` file
+### Dot-sourcing the main script (required at the top of each `update.ps1`)
 
 **Note:** The $ScriptPath variable **_must_** be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
 
@@ -98,6 +98,8 @@ $ParentPath = Split-Path -Parent $ScriptPath
 # Import the UpdateChocolateyPackage function
 . (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
 ```
+
+### Calling the `UpdateChocolateyPackage` function
 
 #### Example using file distributed in package
 
