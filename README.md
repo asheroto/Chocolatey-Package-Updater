@@ -49,7 +49,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 ## Installation
 
 > [!NOTE]
-> An installer is not availabld yet, but for now you can follow the instructions below.
+> An installer is not available yet, but for now you can follow the instructions below.
 
 For the initial setup, a few short steps are required that takes less than 5 minutes. After that, you can simply copy and paste the `update.ps1` script and change the parameters as needed.
 
