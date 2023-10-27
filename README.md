@@ -49,35 +49,25 @@ The `UpdateChocolateyPackage` function provides the following features:
 
 The recommended folder structure matches this repository's structure. You can use this as a template for your own Chocolatey packages repository.
 
--   ChocolateyPackages
-    -   Chocolatey-Package-Updater.ps1
-    -   example-package-exe-distributed
-        -   update.ps1
-        -   fxsound.nuspec
-        -   tools
-            -   ChocolateyInstall.ps1
-            -   fxsound_setup.exe
-            -   VERIFICATION.txt
-    -   example-package-url-url64
-        -   update.ps1
-        -   Miro.nuspec
-        -   tools
-            -   ChocolateyInstall.ps1
-    -   example-package-scrape-version
-        -   update.ps1
-        -   StartAllBack.nuspec
-        -   tools
-            -   ChocolateyInstall.ps1
+Your folder may be called "ChocolateyPackages" and then instead of `example-package-exe-distributed`, for example, it would be `fxsound` or whatever your package name is.
+
+![image](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/7dce86c6-6700-4542-9efb-820563c656a2)
+
+[Here is a real-world example](https://github.com/asheroto/ChocolateyPackages) of a Chocolatey packages repository using this structure. Not all packages in [this example repository](https://github.com/asheroto/ChocolateyPackages) are using this script yet, but they will be soon. The packages using this script are listed in [UpdateAll.ps1](https://github.com/asheroto/ChocolateyPackages/blob/master/UpdateAll.ps1).
+
+## Installation
+
+Currently, there is no formal installer for this utility. To get started, follow these steps:
+
+1. **Download Script**: Download the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
+2. **Place Script**: Place the downloaded script in the root directory of your Chocolatey packages repository like the [Recommended Folder Structure](#recommended-folder-structure) above.
+3. **Create `update.ps1` File**: In accordance with the [Recommended Folder Structure](#recommended-folder-structure), create an `update.ps1` file within the folder of your specific Chocolatey package.
+4. **Dot-Source the Script**: To make the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file, dot-source it. 
+5. **Invoke Function**: Call the `UpdateChocolateyPackage` function, passing in the necessary parameters.
 
 ## Usage
 
 ### Step 1 - Create an `update.ps1` file
-
-Match the [Recommended Folder Structure](#recommended-folder-structure) and create an `update.ps1` file in the folder of your Chocolatey package in the example).
-
-Dot-source the `Chocolatey-Package-Updater.ps1` script to access its functions. Then call the `UpdateChocolateyPackage` function with the required parameters.
-
-You may have to change the path to the `Chocolatey-Package-Updater.ps1` script depending on where you place it, but if you place it in the root folder as described in the and your `update.ps1` file is in a sub-folder (as described in the [Recommended Folder Structure](#recommended-folder-structure)), you can use the following code verbatim.
 
 **Note:** The $ScriptPath variable **_must_** be defined so that the `UpdateChocolateyPackage` function can locate the package files. Whether you hard code the variable or use the code below, it's up to you.
 
