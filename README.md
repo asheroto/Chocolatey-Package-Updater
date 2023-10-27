@@ -311,7 +311,7 @@ param ()
 -   Do I need to use the `VERIFICATION.txt` file?
     -   No, it's optional unless you are distributing an EXE with the package (if EULA allows it). If you don't use it, just leave the parameter blank or comment it out.
 -   Can I use [ntfy.sh](https://github.com/binwiederhier/ntfy), Discord, Telegram, PagerDuty, Twilio, or some other service to alert me?
-    -   Yes!.... but since this script is new I haven't built in native support for other services yet, so you'll have to update the `SendAlertRaw` function.
+    -   Not yet, unless you add it yourself. If you want to get it up and running, modify the `SendAlertRaw` function.
     -   If you aren't sure what to change, ChatGPT is a good place to start.
     -   [ntfy](https://github.com/binwiederhier/ntfy) is cool because once you get it setup, it integrates with many services. So in theory you could use ntfy to send a message to Discord, Telegram, PagerDuty, Twilio, and more.
     -   I am working on adding native support for other services.
