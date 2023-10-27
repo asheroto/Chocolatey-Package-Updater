@@ -49,6 +49,9 @@ The `UpdateChocolateyPackage` function provides the following features:
 
 Currently, there is no installer for this script.
 
+> [!INFORMATION]
+> An installer is in the works, but for now you can follow the instructions below.
+
 For the initial setup, a few short steps are required that takes less than 5 minutes. After that, you can simply copy and paste the `update.ps1` script and change the parameters as needed.
 
 1. **Download** the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
