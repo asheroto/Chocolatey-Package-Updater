@@ -78,11 +78,25 @@ For a practical example of how to set up your Chocolatey packages, you can check
 > [!NOTE]
 > Not every package in this example is using the `Chocolatey-Package-Updater.ps1` script yet, but they will be updated to use it soon. To see which packages are already using the updater script, take a look at the [UpdateAll.ps1 file](https://github.com/asheroto/ChocolateyPackages/blob/master/UpdateAll.ps1) in the same repository.
 
-
 </p>
-</details> 
+</details>
 
 ## Usage
+
+Before we get too deep into the usage, here are the included example packages:
+
+## Full Examples
+
+These are linked in the examples above, but displayed here for convenience.
+
+| Package                                        | Description                                                                                                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fxsound](example-package-exe-distributed)     | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package                                                                    |
+| [Miro](example-package-url-url64)              | Uses `FileUrl` and `FileUrl64` for updating a package with both 32/64-bit EXEs                                                                  |
+| [StartAllBack](example-package-scrape-version) | Uses `ScrapePattern`, `ScrapeUrl`, and `FileUrl` for scraping version number from a URL, uses `{VERSION}` in FileUrl to be replaced by scraping |
+| [Ventoy](example-package-github-repo)          | Uses `GitHubRepoUrl` and `FileUrl` for downloading the latest release from a GitHub repository                                                  |
+
+---
 
 ### Dot-sourcing the main script (required at the top of each `update.ps1`)
 
@@ -223,17 +237,6 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 -   Schedule as often as you'd like, usually weekly or daily. Recommended twice a week, not more than once per day.
 -   Consider changing the power/battery options in the `Conditions` tab.
 
-## Full Examples
-
-These are linked in the examples above, but displayed here for convenience.
-
-| Package                                        | Description                                                                                                                                     |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| [fxsound](example-package-exe-distributed)     | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package                                                                    |
-| [Miro](example-package-url-url64)              | Uses `FileUrl` and `FileUrl64` for updating a package with both 32/64-bit EXEs                                                                  |
-| [StartAllBack](example-package-scrape-version) | Uses `ScrapePattern`, `ScrapeUrl`, and `FileUrl` for scraping version number from a URL, uses `{VERSION}` in FileUrl to be replaced by scraping |
-| [Ventoy](example-package-github-repo)          | Uses `GitHubRepoUrl` and `FileUrl` for downloading the latest release from a GitHub repository                                                  |
-
 ## Function Parameters for `UpdateChocolateyPackage`
 
 | Parameter                 | Type    | Required                                                                 | Description                                                                                                                                                             |
@@ -287,12 +290,12 @@ param ()
 
 ## To-Do List
 
-- [ ] Add `UpdateSelf` function
-- [ ] Add `ntfy` support to open up support for many other notification services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
-- [ ] Add to PowerShell Gallery
-- [ ] Add script to Chocolatey community repository
-- [ ] Add more examples
-- [ ] Improve output/debug
-- [ ] Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
-- [ ] Add check for missing nuspec
-- [ ] Add support for regex matches in case that is needed
+-   [ ] Add `UpdateSelf` function
+-   [ ] Add `ntfy` support to open up support for many other notification services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
+-   [ ] Add to PowerShell Gallery
+-   [ ] Add script to Chocolatey community repository
+-   [ ] Add more examples
+-   [ ] Improve output/debug
+-   [ ] Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
+-   [ ] Add check for missing nuspec
+-   [ ] Add support for regex matches in case that is needed
