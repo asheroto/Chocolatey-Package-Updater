@@ -21,7 +21,7 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 ## Features
 
 > [!IMPORTANT]
-> Right now alerting is in still a work in progress and won't work. I'm working on adding native support for other services. You can use `$Alert = false` to disable alerting for now or update the `SendAlertRaw` function to use your own service.
+> **Alterting does not work at this time** but will in the next few weeks. I'm working on adding native support for other services. You can use `$Alert = false` to disable alerting for now or update the `SendAlertRaw` function to use your own service.
 
 The `UpdateChocolateyPackage` function provides the following features:
 
