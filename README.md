@@ -52,7 +52,7 @@ Currently, there is no installer for this script. To get started, follow these s
 1. **Download** the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
 2. **Move** the downloaded script into the root directory of your Chocolatey packages repository like the **Recommended Folder Structure** below.
 3. **Create** an `update.ps1` file within the folder of your specific Chocolatey package per the examples below.
-4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by [dot-sourcing it](#required-code-at-the-top-of-any-updateps1-script).
+4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by [dot-sourcing it](#dot-sourcing-the-main-script-required-at-the-top-of-each-updateps1).
 5. **Call** the `UpdateChocolateyPackage` function, passing in the necessary parameters.
 
 After everything is created the first time, you can simply copy and paste `update.ps1` as needed or copy from these examples.
@@ -98,6 +98,8 @@ $ParentPath = Split-Path -Parent $ScriptPath
 # Import the UpdateChocolateyPackage function
 . (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
 ```
+
+---
 
 ### Calling the `UpdateChocolateyPackage` function
 
@@ -190,7 +192,7 @@ UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/vento
 
 ---
 
-### Step 2 - Schedule the PowerShell Script
+### Scheduling the PowerShell Script
 
 You can use Windows Task Scheduler to schedule the `update.ps1` script to run automatically. It is recommended that you create an `UpdateAll.ps1` script in the same folder as `Chocolatey-Package-Updater.ps1` and schedule that script to run. See the [UpdateAll.ps1](UpdateAll.ps1) script in this repository for an example.
 
