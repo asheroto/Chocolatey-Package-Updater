@@ -328,3 +328,4 @@ param ()
 -   [ ] Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
 -   [ ] Add check for missing nuspec
 -   [ ] Add support for regex matches in case that is needed
+-   [ ] Simplify the Usage section
