@@ -136,6 +136,7 @@ UpdateChocolateyPackage @packageInfo
 
 <details><summary>Full Example</summary>
 <p>
+
 ```powershell
 [CmdletBinding()] # Enables -Debug parameter for troubleshooting
 param ()
@@ -158,6 +159,7 @@ $packageInfo = @{
 # Call the UpdateChocolateyPackage function and pass the hash table
 UpdateChocolateyPackage @packageInfo
 ```
+
 </p>
 </details>
 
