@@ -35,6 +35,8 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Supports scraping the version number from the download URL.
 -   Supports version number replacement in the download URL.
 -   Supports getting the latest version from a GitHub repository.
+-   **Coming soon:** support for `ntfy` to send alerts to many other services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
+-   **Coming soon:** dot-sourcing the script will not be required.
 
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
@@ -331,3 +333,4 @@ param ()
 -   [ ] Add check for missing nuspec
 -   [ ] Add support for regex matches in case that is needed
 -   [ ] Simplify the Usage section
+-   [ ] Change it so that the `UpdateChocolateyPackage` function can be called without dot-sourcing the script (global function?)
