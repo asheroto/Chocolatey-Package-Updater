@@ -85,6 +85,8 @@ For a practical example of how to set up your Chocolatey packages, you can check
 
 Before we get too deep into the usage, here are the included example packages. If the code block examples are confusing to you, you can check out the example packages to see how it works.
 
+### Example Packages
+
 | Package                                        | Description                                                                                                                                     |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | [fxsound](example-package-exe-distributed)     | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package                                                                    |
