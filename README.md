@@ -53,7 +53,14 @@ Your folder may be called "ChocolateyPackages" and then instead of `example-pack
 
 ![image](https://github.com/asheroto/Chocolatey-Package-Updater/assets/49938263/7dce86c6-6700-4542-9efb-820563c656a2)
 
-[Here is a real-world example](https://github.com/asheroto/ChocolateyPackages) of a Chocolatey packages repository using this structure. Not all packages in [this example repository](https://github.com/asheroto/ChocolateyPackages) are using this script yet, but they will be soon. The packages using this script are listed in [UpdateAll.ps1](https://github.com/asheroto/ChocolateyPackages/blob/master/UpdateAll.ps1).
+Certainly, here's a simplified explanation:
+
+### Real-World Example
+
+For a practical example of how to set up your Chocolatey packages, you can check out [this GitHub repository](https://github.com/asheroto/ChocolateyPackages). This repository shows you how to organize your Chocolatey packages.
+
+> [!NOTE]
+> Not every package in this example is using the `Chocolatey-Package-Updater.ps1` script yet, but they will be updated to use it soon. To see which packages are already using the updater script, take a look at the [UpdateAll.ps1 file](https://github.com/asheroto/ChocolateyPackages/blob/master/UpdateAll.ps1) in the same repository.
 
 ## Installation
 
