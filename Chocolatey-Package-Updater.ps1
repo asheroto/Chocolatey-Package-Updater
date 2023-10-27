@@ -733,12 +733,12 @@ function UpdateChocolateyPackage {
             if ($comparisonResult["OverallComparison"]) {
                 Write-Output "Version or checksum is different. Updating package..."
 
-                # nuspec file
-                # Update version
+                # Update version in nuspec file
                 Write-Output "Updating version in nuspec file..."
-                $nuspecResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(?<=<version>).*?(?=<\/version>)' -Replacement $ProductVersion
-                
-                HandleUpdateResult -Result $nuspecResult -SuccessMessage "Updated version in nuspec file" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`n$nuspecResult"
+
+                # Update the <version> tag
+                $nuspecVersionResult = UpdateFileContent -FilePath $NuspecPath -Pattern '(?<=<version>).*?(?=<\/version>)' -Replacement $ProductVersion
+                HandleUpdateResult -Result $nuspecVersionResult -SuccessMessage "Updated version in nuspec file" -FailureMessage "Failed to update version in nuspec file`n$nuspecVersionResult"
 
                 # ChocolateyInstall.ps1
                 # Update version

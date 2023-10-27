@@ -276,11 +276,12 @@ param ()
 
 ## To-Do List
 
--   Add `UpdateSelf` function
--   Add `ntfy.sh` support
--   Add to PowerShell Gallery
--   Add script to Chocolatey as a package
--   Add more examples
--   Improve output/debug
--   Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
--   Add check for missing nuspec
+- [ ] Add `UpdateSelf` function
+- [ ] Add `ntfy` support to open up support for many other notification services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
+- [ ] Add to PowerShell Gallery
+- [ ] Add script to Chocolatey community repository
+- [ ] Add more examples
+- [ ] Improve output/debug
+- [ ] Support alternate checksum/checksum64 specification in `VERIFICATION.txt` file (right now it expects `checksum:` and `checksum64:`)
+- [ ] Add check for missing nuspec
+- [ ] Add support for regex matches in case that is needed
