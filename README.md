@@ -20,7 +20,8 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 
 ## Features
 
-**ALERT NOTE:** Right now alerting is in still a work in progress and won't work. I'm working on adding native support for other services. You can use $Alert = false to disable alerting for now or update the `SendAlertRaw` function to use your own service.
+> [!IMPORTANT]
+> Right now alerting is in still a work in progress and won't work. I'm working on adding native support for other services. You can use $Alert = false to disable alerting for now or update the `SendAlertRaw` function to use your own service.
 
 The `UpdateChocolateyPackage` function provides the following features:
 
@@ -49,7 +50,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 
 Currently, there is no installer for this script.
 
-> [!INFORMATION]
+> [!NOTE]
 > An installer is in the works, but for now you can follow the instructions below.
 
 For the initial setup, a few short steps are required that takes less than 5 minutes. After that, you can simply copy and paste the `update.ps1` script and change the parameters as needed.
