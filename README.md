@@ -53,9 +53,9 @@ For the initial setup, a few short steps are required that takes less than 5 min
 
 1. **Download** the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
 2. **Move** the downloaded script into the root directory of your Chocolatey packages repository like the **Recommended Folder Structure** below.
-3. **Create** an `update.ps1` file within the folder of your specific Chocolatey package per the examples below.
+3. **Create** an `update.ps1` file within the folder of your specific Chocolatey package (or copy the example package from this repository).
 4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by [dot-sourcing it](#dot-sourcing-the-main-script-required-at-the-top-of-each-updateps1).
-5. **Call** the `UpdateChocolateyPackage` function, passing in the necessary parameters.
+5. **Call** the `UpdateChocolateyPackage` function, passing in the necessary parameters using the [examples below](#calling-the-updatechocolateypackage-function).
 
 <details><summary>Recommended Folder Structure</summary>
 
