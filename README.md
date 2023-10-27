@@ -213,11 +213,14 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 
 ## Full Examples
 
+These are linked in the examples above, but displayed here for convenience.
+
 | Package                                        | Description                                                                                                                                     |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | [fxsound](example-package-exe-distributed)     | Uses `FileUrl` and `FileDestinationPath` for distributing EXE within package                                                                    |
 | [Miro](example-package-url-url64)              | Uses `FileUrl` and `FileUrl64` for updating a package with both 32/64-bit EXEs                                                                  |
 | [StartAllBack](example-package-scrape-version) | Uses `ScrapePattern`, `ScrapeUrl`, and `FileUrl` for scraping version number from a URL, uses `{VERSION}` in FileUrl to be replaced by scraping |
+| [Ventoy](example-package-github-repo)          | Uses `GitHubRepoUrl` and `FileUrl` for downloading the latest release from a GitHub repository                                                  |
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
