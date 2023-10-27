@@ -115,6 +115,8 @@ $ParentPath = Split-Path -Parent $ScriptPath
 
 ### Calling the `UpdateChocolateyPackage` function
 
+Now that you have the dot-sourcing code at the top of your `update.ps1` script, you can call the `UpdateChocolateyPackage` function immediately after.
+
 #### Example using file distributed in package
 
 This method corresponds to the [example-package-exe-distributed](example-package-exe-distributed) example package.
@@ -131,6 +133,32 @@ $packageInfo = @{
 # Call the UpdateChocolateyPackage function and pass the hash table
 UpdateChocolateyPackage @packageInfo
 ```
+
+<details><summary>Full Example</summary>
+<p>
+
+[CmdletBinding()] # Enables -Debug parameter for troubleshooting
+param ()
+
+# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ParentPath = Split-Path -Parent $ScriptPath
+
+# Import the UpdateChocolateyPackage function
+. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
+
+# Create a hash table to store package information
+$packageInfo = @{
+    PackageName         = "fxsound"
+    FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
+    FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
+    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
+}
+
+# Call the UpdateChocolateyPackage function and pass the hash table
+UpdateChocolateyPackage @packageInfo
+</p>
+</details>
 
 #### Example using url and url64:
 
