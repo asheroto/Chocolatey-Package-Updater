@@ -45,6 +45,22 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   PowerShell 7+
 -   Windows Terminal recommended but not required
 
+## Installation
+
+Currently, there is no installer for this script. To get started, follow these steps:
+
+1. **Download** the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
+2. **Move** the downloaded script into the root directory of your Chocolatey packages repository like the **Recommended Folder Structure** below.
+3. **Create** an `update.ps1` file within the folder of your specific Chocolatey package per the examples below.
+4. **Make** the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file by dot-sourcing it. 
+5. **Call** the `UpdateChocolateyPackage` function, passing in the necessary parameters.
+
+After everything is created the first time, you can simply copy and paste `update.ps1` as needed or copy from these examples.
+
+<details><summary>Recommended Folder Structure</summary>
+
+<p>
+
 ## Recommended Folder Structure
 
 The recommended folder structure matches this repository's structure. You can use this as a template for your own Chocolatey packages repository.
@@ -62,15 +78,9 @@ For a practical example of how to set up your Chocolatey packages, you can check
 > [!NOTE]
 > Not every package in this example is using the `Chocolatey-Package-Updater.ps1` script yet, but they will be updated to use it soon. To see which packages are already using the updater script, take a look at the [UpdateAll.ps1 file](https://github.com/asheroto/ChocolateyPackages/blob/master/UpdateAll.ps1) in the same repository.
 
-## Installation
 
-Currently, there is no formal installer for this utility. To get started, follow these steps:
-
-1. **Download Script**: Download the `Chocolatey-Package-Updater.ps1` script from the [latest release](https://github.com/asheroto/Chocolatey-Package-Updater/releases/latest/download/Chocolatey-Package-Updater.ps1).
-2. **Place Script**: Place the downloaded script in the root directory of your Chocolatey packages repository like the [Recommended Folder Structure](#recommended-folder-structure) above.
-3. **Create `update.ps1` File**: In accordance with the [Recommended Folder Structure](#recommended-folder-structure), create an `update.ps1` file within the folder of your specific Chocolatey package.
-4. **Dot-Source the Script**: To make the functions from `Chocolatey-Package-Updater.ps1` available in your `update.ps1` file, dot-source it. 
-5. **Invoke Function**: Call the `UpdateChocolateyPackage` function, passing in the necessary parameters.
+</p>
+</details> 
 
 ## Usage
 
