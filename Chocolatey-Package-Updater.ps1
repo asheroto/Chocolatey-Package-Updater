@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.6
+.VERSION 0.0.7
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -19,6 +19,7 @@
 [Version 0.0.4] - Major improvements. Added support for FileUrl64, checksum64.
 [Version 0.0.5] - Abstracted version/checksum comparison into its own function.
 [Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API. Added GitHub repo example.
+[Version 0.0.7] - Added additional wait time for cleanup to ensure files are release from use before deletion.
 
 #>
 
@@ -52,7 +53,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.6
+- Version: 0.0.7
 - Created by: asheroto
 
 .LINK
@@ -65,7 +66,7 @@ param (
     [switch]$CheckForUpdate
 )
 
-$CurrentVersion = '0.0.6'
+$CurrentVersion = '0.0.7'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $PowerShellGalleryName = 'Chocolatey-Package-Updater'
@@ -460,7 +461,7 @@ function UpdateChocolateyPackage {
         if (Test-Path $FileDownloadTempPath) {
             try {
                 # Sleep for 1 second to allow the file to be released by the process
-                Sleep -Seconds 1
+                Start-Sleep -Seconds 2
 
                 # Remove the file
                 Write-Debug "Removing temporary file: $FileDownloadTempPath"
