@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.7
+.VERSION 0.0.8
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -20,6 +20,7 @@
 [Version 0.0.5] - Abstracted version/checksum comparison into its own function.
 [Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API. Added GitHub repo example.
 [Version 0.0.7] - Added additional wait time for cleanup to ensure files are release from use before deletion.
+[Version 0.0.8] - Improved help. Added Help parameter. Added loop to repeatedly attempt file deletion if it's in use, mitigating file deletion prevention by antivirus software scanning download.
 
 #>
 
@@ -29,6 +30,8 @@
 Streamline the management of Chocolatey packages by automating version updates, checksum validations, and alert notifications.
 
 .DESCRIPTION
+See project site for instructions on how to use including full parameter list and examples.
+
 The script simplifies the process of updating Chocolatey packages by providing automated functionality to:
 - No functions or regex expressions to write: everything happens automatically!
 - Updates the version in the nuspec file.
@@ -45,6 +48,27 @@ The script simplifies the process of updating Chocolatey packages by providing a
 - Supports getting the latest version from a GitHub repository.
 
 .EXAMPLE
+# Required at top of each script
+# Set vars to the script and the parent path ($ScriptPath MUST be defined for the UpdateChocolateyPackage function to work)
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ParentPath = Split-Path -Parent $ScriptPath
+
+# Import the UpdateChocolateyPackage function
+. (Join-Path $ParentPath 'Chocolatey-Package-Updater.ps1')
+
+.EXAMPLE
+# Create a hash table to store package information
+$packageInfo = @{
+    PackageName         = "fxsound"
+    FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
+    FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
+    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
+}
+
+# Call the UpdateChocolateyPackage function and pass the hash table
+UpdateChocolateyPackage @packageInfo
+
+.EXAMPLE
 To update a Chocolatey package, run the following command:
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -Alert $true
 
@@ -53,8 +77,9 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.7
+- Version: 0.0.8
 - Created by: asheroto
+- See project site for instructions on how to use including full parameter list and examples.
 
 .LINK
 Project Site: https://github.com/asheroto/Chocolatey-Package-Updater
@@ -62,13 +87,19 @@ Project Site: https://github.com/asheroto/Chocolatey-Package-Updater
 #>
 [CmdletBinding()]
 param (
+    [switch]$CheckForUpdate,
     [switch]$Version,
-    [switch]$CheckForUpdate
+    [switch]$Help
 )
 
-$CurrentVersion = '0.0.7'
+# ============================================================================ #
+# Initial vars
+# ============================================================================ #
+
+$CurrentVersion = '0.0.8'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
+$SoftwareName = 'Chocolatey Package Updater'
 $PowerShellGalleryName = 'Chocolatey-Package-Updater'
 
 # Suppress progress bar (makes downloading super fast)
@@ -77,6 +108,12 @@ $ProgressPreference = 'SilentlyContinue'
 # Display version if -Version is specified
 if ($Version.IsPresent) {
     $CurrentVersion
+    exit 0
+}
+
+# Display full help if -Help is specified
+if ($Help) {
+    Get-Help -Name $MyInvocation.MyCommand.Source -Full
     exit 0
 }
 
@@ -164,7 +201,7 @@ if ($CheckForUpdate) {
 }
 
 # Heading
-Write-Output "$RepoName $CurrentVersion"
+Write-Output "$SoftwareName $CurrentVersion"
 Write-Output "To check for updates, run $RepoName -CheckForUpdate"
 
 function UpdateFileContent {
@@ -455,30 +492,51 @@ function UpdateChocolateyPackage {
         [string]$GitHubRepoUrl
     )
 
+    function Try-DeleteFile {
+        # Try to delete the file and return true if successful, false if not
+        param (
+            [string]$filePath
+        )
+        try {
+            Remove-Item -Path $filePath -Force -ErrorAction Stop
+            return $true
+        } catch {
+            return $false
+        }
+    }
+
+    function WaitForReleaseAndDelete {
+        # Wait for the file to be released by the process and delete it
+        param (
+            [string]$filePath,
+            [int]$maxTimeout
+        )
+        $fileName = [System.IO.Path]::GetFileName($filePath)
+        $elapsedTime = 0
+        while ($elapsedTime -lt $maxTimeout) {
+            if (Try-DeleteFile -filePath $filePath) {
+                Write-Output "$fileName deleted"
+                return
+            }
+            Start-Sleep -Seconds 1
+            $elapsedTime++
+        }
+        Write-Output "Timeout reached, $fileName not deleted"
+    }
+
     function CleanupFileDownload {
         # Check if FileDownloadTempDelete is not set
         # Check if the file exists at the specified path
         if (Test-Path $FileDownloadTempPath) {
-            try {
-                # Sleep for 1 second to allow the file to be released by the process
-                Start-Sleep -Seconds 2
-
-                # Remove the file
-                Write-Debug "Removing temporary file: $FileDownloadTempPath"
-                Remove-Item $FileDownloadTempPath -Force -ErrorAction Stop
-            } catch {
-                Write-Warning "Failed to remove temporary file: $FileDownloadTempPath"
-            }
+            # Remove the file
+            Write-Debug "Removing temporary file: $FileDownloadTempPath"
+            WaitForReleaseAndDelete -filePath $FileDownloadTempPath -maxTimeout 10
         }
 
         # If FileUrl64 is used, check if the file exists at the specified path
         if ($FileUrl64 -and (Test-Path $FileDownloadTempPath64)) {
-            try {
-                Write-Debug "Removing temporary file: $FileDownloadTempPath64"
-                Remove-Item $FileDownloadTempPath64 -Force
-            } catch {
-                Write-Warning "Failed to remove temporary file: $FileDownloadTempPath64"
-            }
+            Write-Debug "Removing temporary file: $FileDownloadTempPath64"
+            WaitForReleaseAndDelete -filePath $FileDownloadTempPath64 -maxTimeout 10
         }
     }
 
@@ -596,7 +654,6 @@ function UpdateChocolateyPackage {
 
     try {
         # Heading
-        Write-Output ''
         Write-Section "Updating package: $PackageName"
 
         # Initialization and Path Management
@@ -856,3 +913,5 @@ function UpdateChocolateyPackage {
         Pop-Location
     }
 }
+
+Write-Output ""
