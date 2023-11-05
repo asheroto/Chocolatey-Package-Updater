@@ -22,7 +22,8 @@ Thie package was inspired by the [Chocolatey Automatic Package Updater Module](h
 
 The `UpdateChocolateyPackage` function provides the following features:
 
--   **No functions or regex expressions to write: everything happens _automatically_!**
+-   **No functions or regex to write: everything happens _automatically_!**
+-   **Regex expressions only required if scraping version number from a URL.**
 -   Updates the version in the nuspec file.
 -   Updates the url/checksum and url64/checksum64 (if specified) in the `ChocolateyInstall.ps1` script.
 -   Updates the checksum and checksum64 (if specified) in the `VERIFICATION.txt` file (if it exists).
