@@ -334,3 +334,4 @@ param ()
 -   [ ] Add support for regex matches in case that is needed
 -   [ ] Simplify the Usage section
 -   [ ] Change it so that the `UpdateChocolateyPackage` function can be called without dot-sourcing the script (global function?)
+-   [ ] Add color to output
