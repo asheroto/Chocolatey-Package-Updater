@@ -336,3 +336,5 @@ param ()
 -   [ ] Simplify the Usage section
 -   [ ] Change it so that the `UpdateChocolateyPackage` function can be called without dot-sourcing the script (global function?)
 -   [ ] Add color to output
+-   [ ] Automatically remove previous `nupkg` file
+-   [ ] Automatically push to Chocolatey community repository
