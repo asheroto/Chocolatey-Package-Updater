@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.9
+.VERSION 0.0.10
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -22,6 +22,7 @@
 [Version 0.0.7] - Added additional wait time for cleanup to ensure files are release from use before deletion.
 [Version 0.0.8] - Improved help. Added Help parameter. Added loop to repeatedly attempt file deletion if it's in use, mitigating file deletion prevention by antivirus software scanning download.
 [Version 0.0.9] - Improved ProductVersion/FileVersion detection, only returns applicable Chocolatey version number despite the version provided in the metadata of the file/installer.
+[Version 0.0.10] - Added disable IPv6 to aria2c args.
 
 #>
 
@@ -78,7 +79,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.9
+- Version: 0.0.10
 - Created by: asheroto
 - See project site for instructions on how to use including full parameter list and examples.
 
@@ -97,7 +98,7 @@ param (
 # Initial vars
 # ============================================================================ #
 
-$CurrentVersion = '0.0.9'
+$CurrentVersion = '0.0.10'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $SoftwareName = 'Chocolatey Package Updater'
