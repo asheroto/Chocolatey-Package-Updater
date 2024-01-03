@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.8
+.VERSION 0.0.9
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -21,6 +21,7 @@
 [Version 0.0.6] - Added support for GitHubRepoUrl so that the latest version can be scraped from GitHub's API. Added GitHub repo example.
 [Version 0.0.7] - Added additional wait time for cleanup to ensure files are release from use before deletion.
 [Version 0.0.8] - Improved help. Added Help parameter. Added loop to repeatedly attempt file deletion if it's in use, mitigating file deletion prevention by antivirus software scanning download.
+[Version 0.0.9] - Improved ProductVersion/FileVersion detection, only returns applicable Chocolatey version number despite the version provided in the metadata of the file/installer.
 
 #>
 
@@ -77,7 +78,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.8
+- Version: 0.0.9
 - Created by: asheroto
 - See project site for instructions on how to use including full parameter list and examples.
 
@@ -96,7 +97,7 @@ param (
 # Initial vars
 # ============================================================================ #
 
-$CurrentVersion = '0.0.8'
+$CurrentVersion = '0.0.9'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $SoftwareName = 'Chocolatey Package Updater'
@@ -233,7 +234,9 @@ function UpdateFileContent {
                 [System.IO.File]::WriteAllText($absolutePath, $updatedContent)
                 $verifyContent = Get-Content $absolutePath -Raw
 
-                if ($verifyContent -match $Replacement) {
+                # Escape special characters in the replacement string for regex matching
+                $escapedReplacement = [regex]::Escape($Replacement)
+                if ($verifyContent -match $escapedReplacement) {
                     Write-Debug "Replacement verified in file"
                     return "true"
                 } else {
@@ -489,6 +492,12 @@ function UpdateChocolateyPackage {
         [string]$ScrapePattern,
 
         [Parameter(Mandatory = $false)]
+        [string]$DownloadUrlScrapePattern,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DownloadUrlScrapePattern64,
+
+        [Parameter(Mandatory = $false)]
         [string]$GitHubRepoUrl
     )
 
@@ -565,7 +574,8 @@ function UpdateChocolateyPackage {
             $filePart = [System.IO.Path]::GetFileName($tempPath)
 
             # Construct the aria2c command line arguments
-            $aria2cArgs = @("-d", $directoryPart, "-o", $filePart, $url)
+            # Using spoofed user agent because some sites block aria2c
+            $aria2cArgs = @("-d", $directoryPart, "-o", $filePart, $url, "--user-agent", "Wget/1.21.4")
 
             if ($DebugPreference -eq 'SilentlyContinue') {
                 $aria2cArgs += '--quiet'
@@ -593,7 +603,7 @@ function UpdateChocolateyPackage {
         )
 
         $ProductVersion = $null
-        $versionPattern = '(\d+\.\d+\.\d+)'
+        $versionPattern = '(\d+\.\d+)(\.\d+)?(\.\d+)?'
 
         if ($ForceVersionNumber) {
             $ProductVersion = $ForceVersionNumber
@@ -601,14 +611,20 @@ function UpdateChocolateyPackage {
             $fileInfo = (Get-Command $FileDownloadTempPath).FileVersionInfo
 
             if ($fileInfo.ProductVersion) {
-                if ([regex]::IsMatch($fileInfo.ProductVersion, $versionPattern)) {
-                    $ProductVersion = [regex]::Match($fileInfo.ProductVersion, $versionPattern).Groups[1].Value
+                $matches = [regex]::Match($fileInfo.ProductVersion, $versionPattern)
+                if ($matches.Success) {
+                    $majorMinor = $matches.Groups[1].Value
+                    $patch = $matches.Groups[2].Success ? $matches.Groups[2].Value : ".0"
+                    $ProductVersion = $majorMinor + $patch
                 }
             }
 
             if ($null -eq $ProductVersion -and $fileInfo.FileVersion) {
-                if ([regex]::IsMatch($fileInfo.FileVersion, $versionPattern)) {
-                    $ProductVersion = [regex]::Match($fileInfo.FileVersion, $versionPattern).Groups[1].Value
+                $matches = [regex]::Match($fileInfo.FileVersion, $versionPattern)
+                if ($matches.Success) {
+                    $majorMinor = $matches.Groups[1].Value
+                    $patch = $matches.Groups[2].Success ? $matches.Groups[2].Value : ".0"
+                    $ProductVersion = $majorMinor + $patch
                 }
             }
         }
@@ -652,6 +668,10 @@ function UpdateChocolateyPackage {
         return $result
     }
 
+    # ============================================================================ #
+    #  Main Script
+    # ============================================================================ #
+
     try {
         # Heading
         Write-Section "Updating package: $PackageName"
@@ -685,6 +705,34 @@ function UpdateChocolateyPackage {
                 $ForceVersionNumber = $matches[0]
             } else {
                 throw "No match found or invalid version."
+            }
+        }
+
+        # Scrape download URL if applicable
+        if ($ScrapeUrl -and $DownloadUrlScrapePattern) {
+            Write-Debug "Scraping URL: $ScrapeUrl"
+            Write-Debug "Download URL scrape pattern: $DownloadUrlScrapePattern"
+
+            $page = Invoke-WebRequest -Uri $ScrapeUrl
+            if ($page.Content -match $DownloadUrlScrapePattern) {
+                Write-Output "Scraped download URL: $($matches[0])"
+                $FileUrl = $matches[0]
+            } else {
+                throw "No match found or invalid version."
+            }
+
+            # Scrape 64-bit download URL if applicable
+            if ($DownloadUrlScrapePattern64) {
+                Write-Debug "Scraping URL: $ScrapeUrl"
+                Write-Debug "Download URL scrape pattern (64-bit): $DownloadUrlScrapePattern"
+
+                $page = Invoke-WebRequest -Uri $ScrapeUrl
+                if ($page.Content -match $DownloadUrlScrapePattern64) {
+                    Write-Output "Scraped 64-bit download URL: $($matches[0])"
+                    $FileUrl64 = $matches[0]
+                } else {
+                    throw "No match found or invalid version."
+                }
             }
         }
 
@@ -806,8 +854,8 @@ function UpdateChocolateyPackage {
                 HandleUpdateResult -Result $chocolateyInstallVersionResult -SuccessMessage "Updated version in ChocolateyInstall.ps1 script" -FailureMessage "Did not update version in ChocolateyInstall.ps1 script, ignore error if not used`nMessage: $chocolateyInstallVersionResult"
 
                 # ChocolateyInstall.ps1
-                # Update url if ForceVersionNumber is not set
-                if (-not $ForceVersionNumber) {
+                # Update url if ForceVersionNumber is not set, unless DownloadUrlScrapePattern or DownloadUrlScrapePattern64 is set
+                if (-not $ForceVersionNumber -or $DownloadUrlScrapePattern -or $DownloadUrlScrapePattern64) {
                     Write-Output "Updating URL in ChocolateyInstall.ps1 script (if it exists)..."
                     $chocolateyInstallUrlPattern = '(?i)(?<=(url\s*=\s*)["''])(.*?)(?=["''])'
                     $chocolateyInstallUrlResult = UpdateFileContent -FilePath $InstallScriptPath -Pattern $chocolateyInstallUrlPattern -Replacement $FileUrl

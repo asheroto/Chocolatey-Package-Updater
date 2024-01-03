@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one.-->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+    <metadata>
+        <id>metadataplusplus</id>
+        <version>2.05.1</version>
+        <title>Metadata++</title>
+        <authors>Logipole</authors>
+        <owners>asheroto</owners>
+        <licenseUrl>https://logipole.com/eula-en.htm</licenseUrl>
+        <projectUrl>https://logipole.com/metadata++-en.htm</projectUrl>
+        <iconUrl>https://cdn.statically.io/gh/asheroto/ChocolateyPackages/eb9b246b/metadataplusplus/icon.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>![Screenshot of Metadata++](https://cdn.statically.io/gh/asheroto/ChocolateyPackages/01b7d0d897429e26aca74bea319ef2deab43da91/metadataplusplus/screenshot.png)
+
+[Metadata++](https://logipole.com/metadata++-en.htm) is a highly efficient tool tailored for managing metadata on 64-bit Windows 10/11 systems. It stands out for its remarkable speed and smooth user experience, ensuring quick navigation through directories, rapid directory reading, and fluid rendering of panels and thumbnails. Its portable version conveniently stores all configurations and settings in the same folder from which it is executed.
+
+### Performance Optimized
+- Fast and intuitive interface for efficient metadata management.
+
+### Broad Format Support
+- **Image/Photo Formats**: Supports nearly all image formats capable of carrying metadata including CR2, CRW, JPEG, PNG, TIFF, RAW, and WEBM.
+- **Audio Formats**: Supports a wide range of audio formats including MP3, MP4, OGG, and WAV.
+- **Video Formats**: Supports various video formats such as AVI, MP4, DivX, and WEBM.
+- **Text Formats**: Accommodates almost all text formats including XML, OOXML, PDF, and RTF.
+
+### Custom Sidecar Creation
+- Ability to create sidecars to house your custom metadata, even for files that traditionally don't support metadata. This feature allows you to rate any file format.
+
+### Additional Features
+- **Native UNICODE Display**: Ensures correct display of text and characters from any language.
+- **Search Plugin**: Enhances the ability to find and manage metadata across files.
+- **Multi-language Interface**: Available in English, French, Spanish, and Russian.
+
+### Easy Updates
+- No need to uninstall before updating; new updates install over old versions seamlessly. Just ensure all instances of Metadata++ are closed before installing an update.</description>
+        <summary>Metadata++ is a fast and effective metadata viewer/editor with support for all common file formats.</summary>
+        <releaseNotes>https://logipole.com/metadata++-whatsnew-en.htm</releaseNotes>
+        <copyright>Copyright © 2023 Jean Piquemal. All rights reserved.</copyright>
+        <docsUrl>https://logipole.com/metadata++-en.htm</docsUrl>
+        <tags>metadata++ metadataplusplus metadatapp metadata editor viewer tool</tags>
+        <packageSourceUrl>https://github.com/asheroto/ChocolateyPackages/tree/master/metadataplusplus</packageSourceUrl>
+        <dependencies>
+            <dependency id="vcredist140"/>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="tools\**" target="tools" />
+    </files>
+</package>
