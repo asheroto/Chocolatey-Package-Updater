@@ -575,7 +575,7 @@ function UpdateChocolateyPackage {
 
             # Construct the aria2c command line arguments
             # Using spoofed user agent because some sites block aria2c
-            $aria2cArgs = @("-d", $directoryPart, "-o", $filePart, $url, "--user-agent", "Wget/1.21.4")
+            $aria2cArgs = @("-d", $directoryPart, "-o", $filePart, $url, "--disable-ipv6")
 
             if ($DebugPreference -eq 'SilentlyContinue') {
                 $aria2cArgs += '--quiet'
