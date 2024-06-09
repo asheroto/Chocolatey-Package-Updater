@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.10
+.VERSION 0.0.11
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -23,6 +23,7 @@
 [Version 0.0.8] - Improved help. Added Help parameter. Added loop to repeatedly attempt file deletion if it's in use, mitigating file deletion prevention by antivirus software scanning download.
 [Version 0.0.9] - Improved ProductVersion/FileVersion detection, only returns applicable Chocolatey version number despite the version provided in the metadata of the file/installer.
 [Version 0.0.10] - Added disable IPv6 to aria2c args.
+[Version 0.0.11] - Added ignore version.
 
 #>
 
@@ -79,7 +80,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.10
+- Version: 0.0.11
 - Created by: asheroto
 - See project site for instructions on how to use including full parameter list and examples.
 
@@ -98,7 +99,7 @@ param (
 # Initial vars
 # ============================================================================ #
 
-$CurrentVersion = '0.0.10'
+$CurrentVersion = '0.0.11'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $SoftwareName = 'Chocolatey Package Updater'
@@ -499,7 +500,10 @@ function UpdateChocolateyPackage {
         [string]$DownloadUrlScrapePattern64,
 
         [Parameter(Mandatory = $false)]
-        [string]$GitHubRepoUrl
+        [string]$GitHubRepoUrl,
+
+        [Parameter(Mandatory = $false)]
+        [string]$IgnoreVersion
     )
 
     function Try-DeleteFile {
@@ -644,7 +648,8 @@ function UpdateChocolateyPackage {
             [string]$VerificationPath,
             [string]$VerificationChecksum,
             [string]$VerificationChecksum64,
-            [string]$FileUrl64
+            [string]$FileUrl64,
+            [string]$IgnoreVersion
         )
 
         $result = @{}
@@ -811,6 +816,12 @@ function UpdateChocolateyPackage {
 
         Write-Output "Nuspec version: $NuspecVersion"
 
+        # If the version is the same as the ignore version, skip the comparison
+        if ($ProductVersion -eq $IgnoreVersion) {
+            Write-Output "IgnoreVersion specified, ignoring comparison for version: $IgnoreVersion"
+            return
+        }
+
         Write-Output "New checksum: $NewChecksum"
         if ($FileUrl64) {
             Write-Output "New checksum (64-bit): $NewChecksum64"
@@ -910,6 +921,19 @@ function UpdateChocolateyPackage {
 
                 # Write the new version to the console
                 Write-Output "Updated to version $ProductVersion"
+
+                # Delete any nupkg files in the package folder if it exists
+                $nupkgFiles = Get-ChildItem -Path $ScriptPath -Filter "$PackageName.*.nupkg" -File
+                if ($nupkgFiles) {
+                    foreach ($nupkgFile in $nupkgFiles) {
+                        Write-Output "Deleting old nupkg file: $nupkgFile"
+                        Remove-Item -Path $nupkgFile.FullName -Force
+                    }
+                }
+
+                # Run 'choco pack' to create the nupkg file
+                Write-Output "Creating nupkg file..."
+                choco pack
 
                 # Send an alert if enabled
                 Write-Debug "Sending alert..."
