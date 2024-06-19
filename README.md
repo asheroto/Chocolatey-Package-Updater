@@ -209,9 +209,10 @@ This method corresponds to the [example-package-github-repo](example-package-git
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
-    PackageName   = "ventoy"
-    FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"
-    GitHubRepoUrl = "https://github.com/ventoy/Ventoy"
+    PackageName   = "ventoy"                                                                                        # Package name
+    FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"    # URL to download the file from, using {VERSION} where the version number goes
+    GitHubRepoUrl = "https://github.com/ventoy/Ventoy"                                                              # GitHub repository URL
+    AutoPush      = $true                                                                                           # Automatically push the package to the Chocolatey community repository
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -284,6 +285,7 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 | `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from.                                                                                                   |
 | `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                                                                                                                         |
 | `-IgnoreVersion`          | string  | No                                                                       | Ignore this version when attempting to update. This is useful for cases where you have modified the updater, such as `1.0.2.20240531`, and want to ignore version `1.0.2` because version checks would otherwise fail. |
+| `-AutoPush`               | boolean | No                                                                       | Automatically performs "choco push" to push the package to the Chocolatey community repository.                                                                                                                        |
 | `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                                                                                                                                 |
 | `-NuspecPath`             | string  | No                                                                       | **Not recommended. Recommended using default Choco paths.** Absolute/relative path to the nuspec file                                                                                                                  |
 | `-InstallScriptPath`      | string  | No                                                                       | **Not recommended. Recommended using default Choco paths.** Absolute/relative path to the `ChocolateyInstall.ps1` script                                                                                               |

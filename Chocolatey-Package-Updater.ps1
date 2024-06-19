@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.11
+.VERSION 0.0.12
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -24,6 +24,7 @@
 [Version 0.0.9] - Improved ProductVersion/FileVersion detection, only returns applicable Chocolatey version number despite the version provided in the metadata of the file/installer.
 [Version 0.0.10] - Added disable IPv6 to aria2c args.
 [Version 0.0.11] - Added ignore version.
+[Version 0.0.12] - Added AutoPush for automatic pushing to Chocolatey community repository.
 
 #>
 
@@ -80,7 +81,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.11
+- Version: 0.0.12
 - Created by: asheroto
 - See project site for instructions on how to use including full parameter list and examples.
 
@@ -99,7 +100,7 @@ param (
 # Initial vars
 # ============================================================================ #
 
-$CurrentVersion = '0.0.11'
+$CurrentVersion = '0.0.12'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $SoftwareName = 'Chocolatey Package Updater'
@@ -503,7 +504,10 @@ function UpdateChocolateyPackage {
         [string]$GitHubRepoUrl,
 
         [Parameter(Mandatory = $false)]
-        [string]$IgnoreVersion
+        [string]$IgnoreVersion,
+
+        [Parameter(Mandatory = $false)]
+        [boolean]$AutoPush
     )
 
     function Try-DeleteFile {
@@ -674,6 +678,18 @@ function UpdateChocolateyPackage {
         return $result
     }
 
+    function Remove-LeadingZeroesFromVersion {
+        param (
+            [string]$VersionNumber
+        )
+
+        $versionParts = $VersionNumber -split '\.'
+        $cleanedVersionParts = $versionParts | ForEach-Object { [int]$_ }
+        $cleanedVersion = ($cleanedVersionParts -join '.')
+
+        return $cleanedVersion
+    }
+
     # ============================================================================ #
     #  Main Script
     # ============================================================================ #
@@ -765,6 +781,12 @@ function UpdateChocolateyPackage {
         if ($FileUrl64) {
             DownloadFile -Url $FileUrl64 -TempPath $FileDownloadTempPath64 -Is64Bit $true
             $ProductVersion64 = Get-ProductVersion -FileDownloadTempPath $FileDownloadTempPath64 -ForceVersionNumber $ForceVersionNumber
+        }
+
+        # Remove leading zeroes from version numbers
+        $ProductVersion = Remove-LeadingZeroesFromVersion -VersionNumber $ProductVersion
+        if ($ProductVersion64) {
+            $ProductVersion64 = Remove-LeadingZeroesFromVersion -VersionNumber $ProductVersion64
         }
 
         # Nuspec Version and Checksums
@@ -934,6 +956,12 @@ function UpdateChocolateyPackage {
                 # Run 'choco pack' to create the nupkg file
                 Write-Output "Creating nupkg file..."
                 choco pack
+
+                # If AutoPush is enabled, push the package to Chocolatey
+                if ($AutoPush) {
+                    Write-Output "Pushing package to Chocolatey..."
+                    choco push "$PackageName.$ProductVersion.nupkg"
+                }
 
                 # Send an alert if enabled
                 Write-Debug "Sending alert..."
