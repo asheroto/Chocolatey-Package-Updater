@@ -132,7 +132,7 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
-    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
+    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review (optional, default is $true)
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -158,7 +158,6 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
-    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -178,7 +177,6 @@ $packageInfo = @{
     PackageName = "miro"
     FileUrl     = 'https://desktop.miro.com/platforms/win32-x86/Miro.exe'   # URL to download the file from
     FileUrl64   = 'https://desktop.miro.com/platforms/win32/Miro.exe'       # URL to download the file from
-    Alert       = $true                                                     # If the package is updated, send a message to the maintainer for review
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -228,7 +226,7 @@ UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsoun
 ```
 
 ```powershell
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe' -Alert $true
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe'
 ```
 
 ```powershell
@@ -236,7 +234,7 @@ UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startall
 ```
 
 ```powershell
-UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip" -GitHubRepoUrl "https://github.com/ventoy/Ventoy"
+UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip" -GitHubRepoUrl "https://github.com/ventoy/Ventoy" -AutoPush $true
 ```
 
 ---
