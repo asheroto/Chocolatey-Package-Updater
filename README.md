@@ -14,11 +14,11 @@
 
 ## Inspiration
 
-Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
+Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) (AU) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
 
 ## Differences from AU
 
-This script has two key advantages over AU:
+This script has two key advantages over [AU](https://github.com/majkinetor/au):
 
 - **Automation:** Most tasks are handled automatically, reducing the need for regex, except when retrieving version numbers from websites. GitHub repositories automatically detect the latest version.
 
