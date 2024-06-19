@@ -8,8 +8,6 @@
 <a href="https://ko-fi.com/asheroto"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi Button" height="20px"></a>
 <a href="https://www.buymeacoffee.com/asheroto"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=seb6596&button_colour=FFDD00&font_colour=000000&font_family=Lato&outline_colour=000000&coffee_colour=ffffff](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=asheroto&button_colour=FFDD00&font_colour=000000&font_family=Lato&outline_colour=000000&coffee_colour=ffffff)" height="40px"></a>
 
-**Brand new and under development but is currently working! 😊**
-
 `Chocolatey-Package-Updater` is a PowerShell script designed to automate the update of a [Chocolatey](https://chocolatey.org) package's version and checksum, as well as send an alert to the maintainer for review.
 
 `UpdateFunctions.ps1` can be placed anywhere, but ideally at the root of you Chocolatey packages repository, with your packages being subfolders underneath. Then you can dot-source this script to access the function `UpdateChocolateyPackage`.
@@ -17,6 +15,14 @@
 ## Inspiration
 
 Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
+
+## Differences from AU
+
+This script has two key advantages over AU:
+
+- **Automation:** Most tasks are handled automatically, reducing the need for regex, except when retrieving version numbers from websites. GitHub repositories automatically detect the latest version.
+
+- **EXE Comparison:** For EXEs with static URLs, the script compares the actual files to check for newer versions. This is a major benefit over AU, which relies on the version information available online instead of the actual EXE's version.
 
 ## Features
 
