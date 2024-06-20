@@ -14,6 +14,7 @@ $packageInfo = @{
     FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"    # URL to download the file from, using {VERSION} where the version number goes
     GitHubRepoUrl = "https://github.com/ventoy/Ventoy"                                                              # GitHub repository URL
     AutoPush      = $true                                                                                           # Automatically push the package to the Chocolatey community repository
+    EnvFilePath   = "..\.env"                                                                                       # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table

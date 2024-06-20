@@ -13,7 +13,7 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
-    AlertEmailAddress   = "user@domain.com"                              # Email address to alert on package update; alternatively you can set the associated environment variable with an email address
+    EnvFilePath         = "..\.env"                                      # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table

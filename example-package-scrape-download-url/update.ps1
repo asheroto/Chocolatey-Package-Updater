@@ -15,6 +15,7 @@ $packageInfo = @{
     ScrapePattern            = '(?<=Product version: <b>)[\d.]+(?=</b>)'            # Regex pattern to match version number
     DownloadUrlScrapePattern = '(?<=<a href=")[^"]+\.exe(?=")'                      # Regex pattern to find download URL
     FileUrl                  = 'SCRAPE'                                             # Set to SCRAPE if using DownloadUrlScrapePattern
+    EnvFilePath         = "..\.env"                                                 # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table

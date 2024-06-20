@@ -139,6 +139,7 @@ $packageInfo = @{
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
     Alert               = $true                                          # If the package is updated, send a message to the maintainer for review (optional, default is $true)
+    EnvFilePath         = "..\.env"                                      # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -164,6 +165,7 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
+    EnvFilePath         = "..\.env"                                      # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -183,6 +185,7 @@ $packageInfo = @{
     PackageName         = "miro"
     FileUrl             = 'https://desktop.miro.com/platforms/win32-x86/Miro.exe'   # URL to download the file from
     FileUrl64           = 'https://desktop.miro.com/platforms/win32/Miro.exe'       # URL to download the file from
+    EnvFilePath         = "..\.env"                                                 # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -200,6 +203,7 @@ $packageInfo = @{
     ScrapeUrl           = 'https://startallback.com/'                                                                     # URL to scrape for version number
     ScrapePattern       = '(?<=<span class="title">Download v)[\d.]+'                                                     # Regex pattern to match version number
     FileUrl             = "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"          # URL to download the file from
+    EnvFilePath         = "..\.env"                                                                                       # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -217,6 +221,7 @@ $packageInfo = @{
     FileUrl             = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"    # URL to download the file from, using {VERSION} where the version number goes
     GitHubRepoUrl       = "https://github.com/ventoy/Ventoy"                                                              # GitHub repository URL
     AutoPush            = $true                                                                                           # Automatically push the package to the Chocolatey community repository
+    EnvFilePath         = "..\.env"                                                                                       # Path to the .env file for alerting
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -228,19 +233,19 @@ UpdateChocolateyPackage @packageInfo
 The splatting method above is recommended because it's easier to read and maintain, but if you'd rather use named parameters, you can do so like this:
 
 ```powershell
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDestinationPath ".\tools\fxsound_setup.exe" -Alert $true -EnvFilePath "..\.env"
 ```
 
 ```powershell
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe'
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://desktop.miro.com/platforms/win32-x86/Miro.exe" -FileUrl64 'https://desktop.miro.com/platforms/win32/Miro.exe' -EnvFilePath "..\.env"
 ```
 
 ```powershell
-UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startallback.com/' -ScrapePattern '(?<=<span class="title">Download v)[\d.]+' -FileUrl "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"
+UpdateChocolateyPackage -PackageName "StartAllBack" -ScrapeUrl 'https://startallback.com/' -ScrapePattern '(?<=<span class="title">Download v)[\d.]+' -FileUrl "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe" -EnvFilePath "..\.env"
 ```
 
 ```powershell
-UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip" -GitHubRepoUrl "https://github.com/ventoy/Ventoy" -AutoPush $true
+UpdateChocolateyPackage -PackageName "ventoy" -FileUrl "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip" -GitHubRepoUrl "https://github.com/ventoy/Ventoy" -AutoPush $true -EnvFilePath "..\.env"
 ```
 
 ---
@@ -329,7 +334,7 @@ $env:CHOCO_PACKAGE_UPDATER_ALERT_EMAIL = "user@domain.com"
 
 ## Alerting
 
-[Mailjet](https://www.mailjet.com/) is used for email notifications, if you want them. Signing up takes 5-10 minutes. Their free plan supports 6000 emails a month. Just grab the API key from account settings, then adjust your `.env` file like so:
+To get email notifications, you can use [Mailjet](https://www.mailjet.com/). Signing up is quick, taking just 5-10 minutes. The free plan lets you send up to 6,000 emails a month. Once you have your API key from the account settings, set up your `.env` file like this:
 
 ```env
 mailjet_api_key = "ABC123DEF321"
@@ -340,7 +345,7 @@ mailjet_to_name = "your name"
 mailjet_to_email = "alerts@yourdomain.com"
 ```
 
-The from email must match your account email, unless you add another verified sender.
+Make sure the `from` email matches your account email, unless you add another verified sender.
 
 ## Script Parameters
 
@@ -359,10 +364,13 @@ param ()
 
 ## FAQ
 
+- Do I have to use Mailjet?
+    - If you want to be alerted when the package is updated, yes.
+    - Their service is free and only takes a few minutes to sign up.
 -   Do I need to use the `VERIFICATION.txt` file?
     -   No, it's optional unless you are distributing an EXE with the package (if EULA allows it). If you don't use it, just leave the parameter blank or comment it out.
 -   Can I use [ntfy.sh](https://github.com/binwiederhier/ntfy), Discord, Telegram, PagerDuty, Twilio, or some other service to alert me?
-    -   Not yet, unless you add it yourself. If you want to get it up and running, modify the `SendAlertRaw` function.
+    -   Not yet, unless you add it yourself.
     -   If you aren't sure what to change, ChatGPT is a good place to start.
     -   [ntfy](https://github.com/binwiederhier/ntfy) is cool because once you get it setup, it integrates with many services. So in theory you could use ntfy to send a message to Discord, Telegram, PagerDuty, Twilio, and more.
     -   I am working on adding native support for other services.
