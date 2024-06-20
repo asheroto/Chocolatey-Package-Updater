@@ -48,7 +48,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
 > [!IMPORTANT]
-> Alerting uses [Mailjet](https://www.mailjet.com) to send email alerts. I will add in support for different types of alerts later.
+> Alerting uses [Mailjet](https://www.mailjet.com) to send email alerts. Read the [Alerting](#alerting) section on how to configure. I will add in support for different types of alerts later.
 
 ## Requirements
 
@@ -308,29 +308,6 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 - **Not recommended:** These parameters are not recommended as it is better to use the default Chocolatey paths for consistency and simplicity.
 
 `-ScrapeUrl64` and `-ScrapePattern64` are not options because the version number should be the same regardless of architecture.
-
-## Alert Email Address Environment Variable
-
-To avoid exposing your email address in the Chocolatey `update.ps1` script, especially if the script is published to a public repository, you can set the environment variable CHOCO_PACKAGE_UPDATER_ALERT_EMAIL with your email address. This can be done in the Windows settings or set programmatically before calling your `update.ps1` script.
-
-### Setting the Environment Variable in Windows
-
-1. Open the **Start** menu and search for "Environment Variables."
-2. Select **Edit the system environment variables.**
-3. In the **System Properties** window, click on **Environment Variables.**
-4. Under **User variables**, click **New** and enter the following:
-   - **Variable name:** `CHOCO_PACKAGE_UPDATER_ALERT_EMAIL`
-   - **Variable value:** user@domain.com
-5. Click **OK** to save the new variable.
-
-### Setting the Environment Variable Programmatically
-
-```powershell
-$env:CHOCO_PACKAGE_UPDATER_ALERT_EMAIL = "user@domain.com"
-
-# Run your update.ps1 script
-.\update.ps1
-```
 
 ## Alerting
 
