@@ -48,7 +48,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
 > [!IMPORTANT]
-> Alerting uses [ntfy.sh](https://github.com/binwiederhier/ntfy) to send you an e-mail alert, if you so choose. I will add in support for different types of alerts later.
+> Alerting uses [Mailjet](https://www.mailjet.com) to send email alerts. I will add in support for different types of alerts later.
 
 ## Requirements
 
