@@ -34,7 +34,7 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Updates the url/checksum and url64/checksum64 (if specified) in the `ChocolateyInstall.ps1` script.
 -   Updates the checksum and checksum64 (if specified) in the `VERIFICATION.txt` file (if it exists).
 -   Updates the version number in the download URL (if specified).
--   Sends an alert to a designated URL.
+-   Sends an email alert when the package has been updated or if there was an error updating the package.
 -   Supports EXE files distributed in the package.
 -   Supports variable and hash table formats for checksum in the `ChocolateyInstall.ps1` script.
 -   Supports single and double quotes for checksum in the `ChocolateyInstall.ps1` script.
@@ -42,13 +42,13 @@ The `UpdateChocolateyPackage` function provides the following features:
 -   Supports scraping the version number from the download URL.
 -   Supports version number replacement in the download URL.
 -   Supports getting the latest version from a GitHub repository.
--   **Coming soon:** support for `ntfy` to send alerts to many other services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
+-   **Coming soon:** support for `ntfy` to send alerts to other services (Discord, Telegram, PagerDuty, Twilio, etc.)
 -   **Coming soon:** dot-sourcing the script will not be required.
 
 **Note:** This is a rather new project, being born in late September 2023. There may still be some bugs. For now, check out the example packages to see how it works. Also check out the [To-Do List](#to-do-list) for upcoming features.
 
 > [!IMPORTANT]
-> **Alterting does not work at this time** but will in the next few weeks. I'm working on adding native support for other services. You can use `$Alert = false` to disable alerting for now or update the `SendAlertRaw` function to use your own service.
+> Alerting uses [ntfy.sh](https://github.com/binwiederhier/ntfy) to send you an e-mail alert, if you so choose. I will add in support for different types of alerts later.
 
 ## Requirements
 
@@ -180,9 +180,9 @@ This method corresponds to the [example-package-url-url64](example-package-url-u
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
-    PackageName = "miro"
-    FileUrl     = 'https://desktop.miro.com/platforms/win32-x86/Miro.exe'   # URL to download the file from
-    FileUrl64   = 'https://desktop.miro.com/platforms/win32/Miro.exe'       # URL to download the file from
+    PackageName         = "miro"
+    FileUrl             = 'https://desktop.miro.com/platforms/win32-x86/Miro.exe'   # URL to download the file from
+    FileUrl64           = 'https://desktop.miro.com/platforms/win32/Miro.exe'       # URL to download the file from
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -196,10 +196,10 @@ This method corresponds to the [example-package-scrape-version](example-package-
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
-    PackageName   = "StartAllBack"                                                                                  # Package name
-    ScrapeUrl     = 'https://startallback.com/'                                                                     # URL to scrape for version number
-    ScrapePattern = '(?<=<span class="title">Download v)[\d.]+'                                                     # Regex pattern to match version number
-    FileUrl       = "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"          # URL to download the file from
+    PackageName         = "StartAllBack"                                                                                  # Package name
+    ScrapeUrl           = 'https://startallback.com/'                                                                     # URL to scrape for version number
+    ScrapePattern       = '(?<=<span class="title">Download v)[\d.]+'                                                     # Regex pattern to match version number
+    FileUrl             = "https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_{VERSION}_setup.exe"          # URL to download the file from
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -213,10 +213,10 @@ This method corresponds to the [example-package-github-repo](example-package-git
 ```powershell
 # Create a hash table to store package information
 $packageInfo = @{
-    PackageName   = "ventoy"                                                                                        # Package name
-    FileUrl       = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"    # URL to download the file from, using {VERSION} where the version number goes
-    GitHubRepoUrl = "https://github.com/ventoy/Ventoy"                                                              # GitHub repository URL
-    AutoPush      = $true                                                                                           # Automatically push the package to the Chocolatey community repository
+    PackageName         = "ventoy"                                                                                        # Package name
+    FileUrl             = "https://github.com/ventoy/Ventoy/releases/download/v{VERSION}/ventoy-{VERSION}-windows.zip"    # URL to download the file from, using {VERSION} where the version number goes
+    GitHubRepoUrl       = "https://github.com/ventoy/Ventoy"                                                              # GitHub repository URL
+    AutoPush            = $true                                                                                           # Automatically push the package to the Chocolatey community repository
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -278,26 +278,69 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 
 ## Function Parameters for `UpdateChocolateyPackage`
 
-| Parameter                 | Type    | Required                                                                 | Description                                                                                                                                                                                                            |
-| ------------------------- | ------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-PackageName`            | string  | Yes                                                                      | The name of the package.                                                                                                                                                                                               |
-| `-FileUrl`                | string  | Yes                                                                      | The URL to download the file from. If you're using `ScrapeUrl` and `ScrapePattern` you can specify `{VERSION}` in the `FileUrl` and it will download from that FileUrl.                                                |
-| `-FileUrl64`              | string  | Yes                                                                      | The URL to download the file from.                                                                                                                                                                                     |
-| `-FileDestinationPath`    | string  | Only required if EXE distributed in package                              | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                                                                        |
-| `-FileDestinationPath64`  | string  | Only required if url and url64 is used and EXE is distributed in package | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                                                                                                        |
-| `-GitHubRepoUrl`          | string  | No                                                                       | The URL to the GitHub repository. If specified, the latest release will be downloaded using `{VERSION}` replacement in the `FileUrl`.                                                                                  |
-| `-ScrapeUrl`              | string  | No                                                                       | If the version number is not available in the download URL, you can specify a URL to scrape the version number from.                                                                                                   |
-| `-ScrapePattern`          | string  | No                                                                       | The regex pattern to use when scraping the version number from the scrape URL.                                                                                                                                         |
-| `-IgnoreVersion`          | string  | No                                                                       | Ignore this version when attempting to update. This is useful for cases where you have modified the updater, such as `1.0.2.20240531`, and want to ignore version `1.0.2` because version checks would otherwise fail. |
-| `-AutoPush`               | boolean | No                                                                       | Automatically performs "choco push" to push the package to the Chocolatey community repository.                                                                                                                        |
-| `-Alert`                  | boolean | No                                                                       | If the package is updated, send a message to the maintainer for review                                                                                                                                                 |
-| `-NuspecPath`             | string  | No                                                                       | **Not recommended. Recommended using default Choco paths.** Absolute/relative path to the nuspec file                                                                                                                  |
-| `-InstallScriptPath`      | string  | No                                                                       | **Not recommended. Recommended using default Choco paths.** Absolute/relative path to the `ChocolateyInstall.ps1` script                                                                                               |
-| `-VerificationPath`       | string  | No                                                                       | **Not recommended. Recommended using default Choco paths.** Absolute/relative path to the `VERIFICATION.txt` file                                                                                                      |
-| `-FileDownloadTempPath`   | string  | No                                                                       | **Not recommended. Recommended using default paths.**Absolute/relative path to save the file to                                                                                                                        |
-| `-FileDownloadTempPath64` | string  | No                                                                       | **Not recommended. Recommended using default paths.**Absolute/relative path to save the file to                                                                                                                        |
+| Parameter                 | Type    | Required                       | Description                                                                                                                           |
+| ------------------------- | ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `-PackageName`            | string  | Yes                            | The name of the package.                                                                                                              |
+| `-FileUrl`                | string  | Yes                            | The URL to download the file from. Supports `{VERSION}` placeholder if used with `ScrapeUrl` and `ScrapePattern`.                     |
+| `-FileUrl64`              | string  | Yes                            | The URL to download the 64-bit file from.                                                                                             |
+| `-FileDestinationPath`    | string  | Required if EXE is distributed | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                       |
+| `-FileDestinationPath64`  | string  | Required if EXE is distributed | Absolute/relative path to move/rename the temporary 64-bit file to (if EXE is distributed in package).                                |
+| `-GitHubRepoUrl`          | string  | No                             | The URL to the GitHub repository. If specified, the latest release will be downloaded using `{VERSION}` replacement in the `FileUrl`. |
+| `-ScrapeUrl`              | string  | No                             | URL to scrape the version number from if it is not available in the download URL.                                                     |
+| `-ScrapePattern`          | string  | No                             | Regex pattern to use when scraping the version number from the scrape URL.                                                            |
+| `-IgnoreVersion`          | string  | No                             | Ignore this version when attempting to update. Useful for ignoring modified versions like `1.0.2.20240531`.                           |
+| `-AutoPush`               | boolean | No                             | Automatically performs "choco push" to push the package to the Chocolatey community repository.                                       |
+| `-Alert`                  | boolean | No                             | If the package is updated, send a notification to the maintainer for review.                                                          |
+| `-EnvFilePath`            | string  | Required for email alerts      | Specifies the path to the .env file that contains Mailjet API key and to/from email information (refer to example below).             |
+| `-NuspecPath`             | string  | No                             | **Not recommended.** Absolute/relative path to the nuspec file. Default Choco paths are recommended.                                  |
+| `-InstallScriptPath`      | string  | No                             | **Not recommended.** Absolute/relative path to the `ChocolateyInstall.ps1` script. Default Choco paths are recommended.               |
+| `-VerificationPath`       | string  | No                             | **Not recommended.** Absolute/relative path to the `VERIFICATION.txt` file. Default Choco paths are recommended.                      |
+| `-FileDownloadTempPath`   | string  | No                             | **Not recommended.** Absolute/relative path to save the temporary download file. Default paths are recommended.                       |
+| `-FileDownloadTempPath64` | string  | No                             | **Not recommended.** Absolute/relative path to save the temporary 64-bit download file. Default paths are recommended.                |
+
+### Notes:
+- **Required if EXE is distributed:** This parameter is required only if the EXE file is distributed as part of the package.
+- **Not recommended:** These parameters are not recommended as it is better to use the default Chocolatey paths for consistency and simplicity.
 
 `-ScrapeUrl64` and `-ScrapePattern64` are not options because the version number should be the same regardless of architecture.
+
+## Alert Email Address Environment Variable
+
+To avoid exposing your email address in the Chocolatey `update.ps1` script, especially if the script is published to a public repository, you can set the environment variable CHOCO_PACKAGE_UPDATER_ALERT_EMAIL with your email address. This can be done in the Windows settings or set programmatically before calling your `update.ps1` script.
+
+### Setting the Environment Variable in Windows
+
+1. Open the **Start** menu and search for "Environment Variables."
+2. Select **Edit the system environment variables.**
+3. In the **System Properties** window, click on **Environment Variables.**
+4. Under **User variables**, click **New** and enter the following:
+   - **Variable name:** `CHOCO_PACKAGE_UPDATER_ALERT_EMAIL`
+   - **Variable value:** user@domain.com
+5. Click **OK** to save the new variable.
+
+### Setting the Environment Variable Programmatically
+
+```powershell
+$env:CHOCO_PACKAGE_UPDATER_ALERT_EMAIL = "user@domain.com"
+
+# Run your update.ps1 script
+.\update.ps1
+```
+
+## Alerting
+
+[Mailjet](https://www.mailjet.com/) is used for email notifications, if you want them. Signing up takes 5-10 minutes. Their free plan supports 6000 emails a month. Just grab the API key from account settings, then adjust your `.env` file like so:
+
+```env
+mailjet_api_key = "ABC123DEF321"
+mailjet_api_secret = "XYZ321ZYX123"
+mailjet_from_name = "Chocolatey Package Updater"
+mailjet_from_email = "alerts@yourdomain.com"
+mailjet_to_name = "your name"
+mailjet_to_email = "alerts@yourdomain.com"
+```
+
+The from email must match your account email, unless you add another verified sender.
 
 ## Script Parameters
 
@@ -331,8 +374,9 @@ param ()
 
 ## To-Do List
 
+-   [x] Add `Mailjet` support for email alerts
+-   [ ] Add `ntfy` to open up support for many other notification services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
 -   [ ] Add `UpdateSelf` function
--   [ ] Add `ntfy` support to open up support for many other notification services (email, Discord, Telegram, PagerDuty, Twilio, etc.)
 -   [ ] Add to PowerShell Gallery
 -   [ ] Add script to Chocolatey community repository
 -   [ ] Add more examples

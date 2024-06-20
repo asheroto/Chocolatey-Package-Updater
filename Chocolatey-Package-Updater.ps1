@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 0.0.12
+.VERSION 0.1.0
 
 .GUID 9b612c16-25c0-4a40-afc7-f876274e7e8c
 
@@ -25,6 +25,7 @@
 [Version 0.0.10] - Added disable IPv6 to aria2c args.
 [Version 0.0.11] - Added ignore version.
 [Version 0.0.12] - Added AutoPush for automatic pushing to Chocolatey community repository.
+[Version 0.1.0] - Added Mailjet support for alerting.
 
 #>
 
@@ -66,7 +67,7 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
-    Alert               = $true                                          # If the package is updated, send a message to the maintainer for review
+    EnvFilePath         = '..\.env'                                         # Path to the .env file containing environment variables
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -81,7 +82,7 @@ To update a Chocolatey package with additional parameters, run the following com
 UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
 
 .NOTES
-- Version: 0.0.12
+- Version: 0.1.0
 - Created by: asheroto
 - See project site for instructions on how to use including full parameter list and examples.
 
@@ -100,7 +101,7 @@ param (
 # Initial vars
 # ============================================================================ #
 
-$CurrentVersion = '0.0.12'
+$CurrentVersion = '0.1.0'
 $RepoOwner = 'asheroto'
 $RepoName = 'Chocolatey-Package-Updater'
 $SoftwareName = 'Chocolatey Package Updater'
@@ -270,49 +271,78 @@ function HandleUpdateResult {
     }
 }
 
-function SendAlertRaw {
+function SendEmailMailjet {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$Subject,
 
         [Parameter(Mandatory = $true)]
-        [string]$Message
+        [string]$TextContent,
+
+        [Parameter(Mandatory = $false)]
+        [string]$HtmlContent,
+
+        [Parameter(Mandatory = $false)]
+        [string]$EnvFilePath
     )
 
-    # Note - you might consider using ntfy.sh, it's an awesome tool
-    # In this script, however, I'm using a custom service that I built
-    # This function gets the URL from a secure string file (encrypted) and sends the alert by making a POST request to the URL
-    # If you just want to make a GET/POST request, comment out the lines below until you get to the if($alertUrl)/Invoke-WebRequest section and replace with your own code
+    # Load environment variables from the specified file if specified
+    if ($EnvFilePath) {
+        Load-DotEnv -Path $EnvFilePath
+    }
 
-    # To save the URL as a secure string, run the following command in the comment block:
-    <#
-        # Connect
-        $CredsFile = "C:\Path\To\SecureString\Folder\SecretURL.txt"
+    $ApiKey = $env:MAILJET_API_KEY
+    $ApiSecret = $env:MAILJET_API_SECRET
+    $FromEmail = $env:MAILJET_FROM_EMAIL
+    $FromName = $env:MAILJET_FROM_NAME
+    $ToEmail = $env:MAILJET_TO_EMAIL
+    $ToName = $env:MAILJET_TO_NAME
 
-        # Store credential in a file as secure string
-        Read-Host "Secret URL" -AsSecureString | ConvertFrom-SecureString | Out-File $CredsFile
-    #>
+    if (-not $ApiKey -or -not $ApiSecret -or -not $FromEmail -or -not $FromName -or -not $ToEmail -or -not $ToName) {
+        Write-Warning "One or more required environment variables are missing."
+        return
+    }
 
-    # Environment variable contains path to $CredsFile (create or change below as needed)
-    # Get the secret URL from the secure string file using the path in the environment variable
-    $CredsFile = [System.Environment]::GetEnvironmentVariable('EMAIL_NOTIFICATION_CREDS_PATH', [System.EnvironmentVariableTarget]::User)
+    $url = "https://api.mailjet.com/v3.1/send"
 
-    # Convert the secure string to a string
-    $secret = Get-Content $CredsFile | ConvertTo-SecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
-    $alertUrl = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    $body = @{
+        Messages = @(
+            @{
+                From = @{
+                    Email = $FromEmail
+                    Name  = $FromName
+                }
+                To = @(
+                    @{
+                        Email = $ToEmail
+                        Name  = $ToName
+                    }
+                )
+                Subject  = $Subject
+                TextPart = $TextContent
+                HTMLPart = $HtmlContent
+            }
+        )
+        SandboxMode = $false
+    } | ConvertTo-Json -Depth 10
 
-    # Replace {SUBJECT} and {MESSAGE} in the URL
-    $alertUrl = $alertUrl -replace '{SUBJECT}', $Subject
-    $alertUrl = $alertUrl -replace '{MESSAGE}', $Message
+    $headers = @{
+        "Authorization" = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${ApiKey}:${ApiSecret}")))"
+        "Content-Type"  = "application/json"
+    }
 
-    if ($alertUrl) {
-        try {
-            Invoke-WebRequest -Uri $alertUrl -Method Post -Body $Message -ContentType "text/plain" | Out-Null
-            Write-Output "Alert sent."
-        } catch {
-            Write-Warning "Failed to send alert."
+    try {
+        $response = Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $body
+        Write-Output "Email sent successfully."
+        if ($PSCmdlet.MyInvocation.BoundParameters['Debug']) {
+            Write-Debug "Response: $($response | ConvertTo-Json -Depth 3)"
+        }
+    } catch {
+        Write-Warning "Failed to send email."
+        Write-Warning "Error details: $_"
+        if ($PSCmdlet.MyInvocation.BoundParameters['Debug']) {
+            Write-Debug $_.Exception.Message
         }
     }
 }
@@ -327,32 +357,78 @@ function SendAlert {
         [string]$Message,
 
         [Parameter(Mandatory = $false)]
-        [boolean]$Alert = $true
+        [boolean]$Alert = $true,
+
+        [Parameter(Mandatory = $false)]
+        [string]$EnvFilePath
     )
 
-    # If Alert is false, let the user know that the alert is disabled
     if (!$Alert) {
         Write-Output "Alert disabled. Skipping alert."
         return
     }
 
-    # Output sending alert
     Write-Output "Sending alert..."
 
-    # Create the HTML body for the notification
     $date = Get-Date -Format "yyyy-MM-dd hh:mm:ss tt"
-    $body = "<html><body>"
-    $body += "<font face='Arial'>"
-    $body += "<p>$Message</p>"
-    $body += "<p><strong>Time:</strong> $date</p>"
-    $body += "</font>"
-    $body += "</body></html>"
+    $body = "$Message`n`nTime: $date"
 
     Write-Verbose "Sending alert with subject: $Subject"
     Write-Verbose "Sending alert with body:`n$body"
 
-    # Send the alert
-    SendAlertRaw -Subject $Subject -Message $body
+    SendEmailMailjet -Subject $Subject -TextContent $body -EnvFilePath $EnvFilePath
+}
+
+function Load-DotEnv {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Process", "User", "Machine")]
+        [string]$Scope = "Process"  # Default scope is Process
+    )
+
+    # Determine if the given path is a file or a directory
+    if (Test-Path -Path $Path -PathType Container) {
+        $envFilePath = Join-Path -Path $Path -ChildPath ".env"
+    } elseif (Test-Path -Path $Path -PathType Leaf) {
+        $envFilePath = $Path
+    } else {
+        Write-Warning "The specified path does not exist: $Path"
+        return
+    }
+
+    if (-not (Test-Path -Path $envFilePath)) {
+        Write-Warning "The .env file does not exist at the specified location: $envFilePath"
+        return
+    }
+
+    Get-Content $envFilePath | ForEach-Object {
+        $_.Trim() | ForEach-Object {
+            if ($_ -match '^\s*#' -or $_ -eq '') {
+                # Skip comments and empty lines
+                return
+            }
+            if ($_ -match '^\s*([^=]+?)\s*=\s*(.*?)\s*$') {
+                $key = $matches[1].Trim()
+                $value = $matches[2].Trim()
+
+                # Remove surrounding quotes if they exist
+                if ($value.StartsWith('"') -and $value.EndsWith('"')) {
+                    $value = $value.Substring(1, $value.Length - 2)
+                } elseif ($value.StartsWith("'") -and $value.EndsWith("'")) {
+                    $value = $value.Substring(1, $value.Length - 2)
+                }
+
+                # Set the environment variable with the specified scope
+                [System.Environment]::SetEnvironmentVariable($key, $value, $Scope)
+            }
+        }
+    }
+
+    Write-Debug "Environment variables loaded from $envFilePath with scope $Scope"
 }
 
 function Write-Section {
@@ -489,6 +565,9 @@ function UpdateChocolateyPackage {
         [boolean]$Alert = $true,
 
         [Parameter(Mandatory = $false)]
+        [string]$AlertEmailAddress,
+
+        [Parameter(Mandatory = $false)]
         [string]$ScrapeUrl,
 
         [Parameter(Mandatory = $false)]
@@ -507,7 +586,10 @@ function UpdateChocolateyPackage {
         [string]$IgnoreVersion,
 
         [Parameter(Mandatory = $false)]
-        [boolean]$AutoPush
+        [boolean]$AutoPush,
+
+        [Parameter(Mandatory = $false)]
+        [string]$EnvFilePath
     )
 
     function Try-DeleteFile {
@@ -959,13 +1041,14 @@ function UpdateChocolateyPackage {
 
                 # If AutoPush is enabled, push the package to Chocolatey
                 if ($AutoPush) {
-                    Write-Output "Pushing package to Chocolatey..."
-                    choco push "$PackageName.$ProductVersion.nupkg"
+                    $filename = "$PackageName.$ProductVersion.nupkg"
+                    Write-Output "Pushing $filename to Chocolatey..."
+                    choco push $filename
                 }
 
                 # Send an alert if enabled
                 Write-Debug "Sending alert..."
-                SendAlert -Subject "$PackageName Package Updated" -Message "$PackageName has been updated to version $ProductVersion. It is now ready for testing." -Alert $Alert
+                SendAlert -Subject "$PackageName Package Updated" -Message "$PackageName has been updated to version $ProductVersion." -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
 
                 # If the destination path is specified, move the downloaded file to the specified destination
                 if ($FileDestinationPath) {
@@ -996,12 +1079,12 @@ function UpdateChocolateyPackage {
 
             # Send an alert if enabled
             Write-Debug "Sending package error alert..."
-            SendAlert -Subject "$PackageName Package Error" -Message "$PackageName detected an invalid version format. Please check the update script and files." -Alert $Alert
+            SendAlert -Subject "$PackageName Package Error" -Message "$PackageName detected an invalid version format. Please check the update script and files." -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
         }
     } catch {
         # Send an alert if enabled
         Write-Debug "Sending package error alert..."
-        SendAlert -Subject "$PackageName Package Error" -Message "$PackageName had an error when checking for updates. Please check the update script and files.<br><br><strong>Error:</strong> $_" -Alert $Alert
+        SendAlert -Subject "$PackageName Package Error" -Message "$PackageName had an error when checking for updates. Please check the update script and files.`n`nError: $_" -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
 
         # Write the error to the console
         Write-Warning "An error occurred: $_"
