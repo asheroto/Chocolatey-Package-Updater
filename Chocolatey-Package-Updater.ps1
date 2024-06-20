@@ -67,7 +67,7 @@ $packageInfo = @{
     PackageName         = "fxsound"
     FileUrl             = 'https://download.fxsound.com/fxsoundlatest'   # URL to download the file from
     FileDestinationPath = '.\tools\fxsound_setup.exe'                    # Path to move/rename the temporary file to (if EXE is distributed in package
-    EnvFilePath         = '..\.env'                                         # Path to the .env file containing environment variables
+    EnvFilePath         = '..\.env'                                      # Path to the .env file containing environment variables
 }
 
 # Call the UpdateChocolateyPackage function and pass the hash table
@@ -75,11 +75,11 @@ UpdateChocolateyPackage @packageInfo
 
 .EXAMPLE
 To update a Chocolatey package, run the following command:
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -Alert $true
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -Alert $true -EnvFilePath "..\.env"
 
 .EXAMPLE
 To update a Chocolatey package with additional parameters, run the following command:
-UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true
+UpdateChocolateyPackage -PackageName "fxsound" -FileUrl "https://download.fxsound.com/fxsoundlatest" -FileDownloadTempPath ".\fxsound_setup_temp.exe" -FileDestinationPath ".\tools\fxsound_setup.exe" -NuspecPath ".\fxsound.nuspec" -InstallScriptPath ".\tools\ChocolateyInstall.ps1" -VerificationPath ".\tools\VERIFICATION.txt" -Alert $true -EnvFilePath "..\.env"
 
 .NOTES
 - Version: 0.1.0
@@ -307,13 +307,13 @@ function SendEmailMailjet {
     $url = "https://api.mailjet.com/v3.1/send"
 
     $body = @{
-        Messages = @(
+        Messages    = @(
             @{
-                From = @{
+                From     = @{
                     Email = $FromEmail
                     Name  = $FromName
                 }
-                To = @(
+                To       = @(
                     @{
                         Email = $ToEmail
                         Name  = $ToName
@@ -1046,9 +1046,13 @@ function UpdateChocolateyPackage {
                     choco push $filename
                 }
 
+                # Determine the push status
+                $pushStatus = if ($AutoPush) { "Pushed: TRUE" } else { "Pushed: FALSE" }
+
                 # Send an alert if enabled
                 Write-Debug "Sending alert..."
-                SendAlert -Subject "$PackageName Package Updated" -Message "$PackageName has been updated to version $ProductVersion." -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
+                $alertMessage = "$PackageName has been updated to version $ProductVersion.`n$pushStatus"
+                SendAlert -Subject "$PackageName Package Updated" -Message $alertMessage -Alert $Alert -EnvFilePath $EnvFilePath
 
                 # If the destination path is specified, move the downloaded file to the specified destination
                 if ($FileDestinationPath) {
@@ -1079,12 +1083,12 @@ function UpdateChocolateyPackage {
 
             # Send an alert if enabled
             Write-Debug "Sending package error alert..."
-            SendAlert -Subject "$PackageName Package Error" -Message "$PackageName detected an invalid version format. Please check the update script and files." -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
+            SendAlert -Subject "$PackageName Package Error" -Message "$PackageName detected an invalid version format. Please check the update script and files." -Alert $Alert -EnvFilePath $EnvFilePath
         }
     } catch {
         # Send an alert if enabled
         Write-Debug "Sending package error alert..."
-        SendAlert -Subject "$PackageName Package Error" -Message "$PackageName had an error when checking for updates. Please check the update script and files.`n`nError: $_" -Alert $Alert -Package $PackageName -EnvFilePath $EnvFilePath
+        SendAlert -Subject "$PackageName Package Error" -Message "$PackageName had an error when checking for updates. Please check the update script and files.`n`nError: $_" -Alert $Alert -EnvFilePath $EnvFilePath
 
         # Write the error to the console
         Write-Warning "An error occurred: $_"
