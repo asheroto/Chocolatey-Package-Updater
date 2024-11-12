@@ -1023,6 +1023,26 @@ function UpdateChocolateyPackage {
                     }
                 }
 
+                # If the destination path is specified, move the downloaded file to the specified destination
+                if ($FileDestinationPath) {
+                    Write-Debug "Moving file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`""
+                    try {
+                        Move-Item $FileDownloadTempPath -Destination $FileDestinationPath -Force
+                    } catch {
+                        throw "Failed to move file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`" with error: $_"
+                    }
+                }
+
+                # If the destination path is specified, move the downloaded file to the specified destination for 64-bit
+                if ($FileUrl64 -and $FileDestinationPath64) {
+                    Write-Debug "Moving file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`""
+                    try {
+                        Move-Item $FileDownloadTempPath64 -Destination $FileDestinationPath64 -Force
+                    } catch {
+                        throw "Failed to move file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`" with error: $_"
+                    }
+                }
+
                 # Write the new version to the console
                 Write-Output "Updated to version $ProductVersion"
 
@@ -1053,26 +1073,6 @@ function UpdateChocolateyPackage {
                 Write-Debug "Sending alert..."
                 $alertMessage = "$PackageName has been updated to version $ProductVersion.`n$pushStatus"
                 SendAlert -Subject "$PackageName Package Updated" -Message $alertMessage -Alert $Alert -EnvFilePath $EnvFilePath
-
-                # If the destination path is specified, move the downloaded file to the specified destination
-                if ($FileDestinationPath) {
-                    Write-Debug "Moving file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`""
-                    try {
-                        Move-Item $FileDownloadTempPath -Destination $FileDestinationPath -Force
-                    } catch {
-                        throw "Failed to move file `"${FileDownloadTempPath}`" to `"${FileDestinationPath}`" with error: $_"
-                    }
-                }
-
-                # If the destination path is specified, move the downloaded file to the specified destination for 64-bit
-                if ($FileUrl64 -and $FileDestinationPath64) {
-                    Write-Debug "Moving file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`""
-                    try {
-                        Move-Item $FileDownloadTempPath64 -Destination $FileDestinationPath64 -Force
-                    } catch {
-                        throw "Failed to move file `"${FileDownloadTempPath64}`" to `"${FileDestinationPath64}`" with error: $_"
-                    }
-                }
             } else {
                 # Package is up to date
                 Write-Output "No update needed. No alert sent."
