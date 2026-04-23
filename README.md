@@ -14,7 +14,7 @@
 
 ## Inspiration
 
-Thie package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) (AU) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
+This package was inspired by the [Chocolatey Automatic Package Updater Module](https://github.com/majkinetor/au) (AU) but that project is no longer maintained and I wanted to create something that was more lightweight and easier to use. The goal is to make it as easy as possible to update your Chocolatey packages without having to write regex or much more than a few lines of code.
 
 ## Differences from AU
 
@@ -286,16 +286,18 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 | Parameter                 | Type    | Required                       | Description                                                                                                                           |
 | ------------------------- | ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `-PackageName`            | string  | Yes                            | The name of the package.                                                                                                              |
-| `-FileUrl`                | string  | Yes                            | The URL to download the file from. Supports `{VERSION}` placeholder if used with `ScrapeUrl` and `ScrapePattern`.                     |
-| `-FileUrl64`              | string  | Yes                            | The URL to download the 64-bit file from.                                                                                             |
+| `-FileUrl`                | string  | Yes*                           | The URL to download the file from. Supports `{VERSION}` placeholder if used with `ScrapeUrl` and `ScrapePattern`. Optional when `-DownloadUrlScrapePattern` is used. |
+| `-FileUrl64`              | string  | No                             | The URL to download the 64-bit file from.                                                                                             |
 | `-FileDestinationPath`    | string  | Required if EXE is distributed | Absolute/relative path to move/rename the temporary file to (if EXE is distributed in package).                                       |
 | `-FileDestinationPath64`  | string  | Required if EXE is distributed | Absolute/relative path to move/rename the temporary 64-bit file to (if EXE is distributed in package).                                |
 | `-GitHubRepoUrl`          | string  | No                             | The URL to the GitHub repository. If specified, the latest release will be downloaded using `{VERSION}` replacement in the `FileUrl`. |
-| `-ScrapeUrl`              | string  | No                             | URL to scrape the version number from if it is not available in the download URL.                                                     |
-| `-ScrapePattern`          | string  | No                             | Regex pattern to use when scraping the version number from the scrape URL.                                                            |
+| `-ScrapeUrl`              | string  | No                             | URL to scrape the version number or download URL from.                                                                                |
+| `-ScrapePattern`          | string  | No                             | Regex pattern to use when scraping the **version number** from the scrape URL.                                                        |
+| `-DownloadUrlScrapePattern` | string | No                            | Regex pattern to use when scraping the **download URL** from the scrape URL. When used, `-FileUrl` is not required.                   |
+| `-DownloadUrlScrapePattern64` | string | No                          | Regex pattern to use when scraping the 64-bit **download URL** from the scrape URL.                                                   |
 | `-IgnoreVersion`          | string  | No                             | Ignore this version when attempting to update. Useful for ignoring modified versions like `1.0.2.20240531`.                           |
-| `-AutoPush`               | boolean | No                             | Automatically performs "choco push" to push the package to the Chocolatey community repository.                                       |
-| `-Alert`                  | boolean | No                             | If the package is updated, send a notification to the maintainer for review.                                                          |
+| `-AutoPush`               | boolean | No                             | Automatically performs "choco push" to push the package to the Chocolatey community repository. When enabled, alerts are suppressed.  |
+| `-Alert`                  | boolean | No                             | If the package is updated, send a notification to the maintainer for review. Only sent when `-AutoPush` is false.                     |
 | `-EnvFilePath`            | string  | Required for email alerts      | Specifies the path to the .env file that contains Mailjet API key and to/from email information (refer to example below).             |
 | `-NuspecPath`             | string  | No                             | **Not recommended.** Absolute/relative path to the nuspec file. Default Choco paths are recommended.                                  |
 | `-InstallScriptPath`      | string  | No                             | **Not recommended.** Absolute/relative path to the `ChocolateyInstall.ps1` script. Default Choco paths are recommended.               |
@@ -304,8 +306,19 @@ pwsh -Command "& 'C:\Projects\ChocolateyPackages\fxsound\update.ps1'"
 | `-FileDownloadTempPath64` | string  | No                             | **Not recommended.** Absolute/relative path to save the temporary 64-bit download file. Default paths are recommended.                |
 
 ### Notes:
-- **Required if EXE is distributed:** This parameter is required only if the EXE file is distributed as part of the package.
+- **\*Required if EXE is distributed:** `-FileUrl` is required unless `-DownloadUrlScrapePattern` is used.
+- **Required if EXE is distributed:** `-FileDestinationPath` / `-FileDestinationPath64` are required only if the EXE file is distributed as part of the package.
 - **Not recommended:** These parameters are not recommended as it is better to use the default Chocolatey paths for consistency and simplicity.
+
+### GitHub API Rate Limiting
+
+When using `GitHubRepoUrl`, unauthenticated requests are subject to GitHub's API rate limit (60 requests/hour). If the limit is exceeded, the script will display a clear error message. To increase the limit, set the `GITHUB_TOKEN` environment variable to a [personal access token](https://github.com/settings/tokens):
+
+```env
+GITHUB_TOKEN=your_token_here
+```
+
+You can add this to your `.env` file alongside your Mailjet credentials.
 
 `-ScrapeUrl64` and `-ScrapePattern64` are not options because the version number should be the same regardless of architecture.
 
